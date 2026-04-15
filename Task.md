@@ -16,3 +16,8 @@ make it Attention: Can it ignore "distractor" info and find the needle in the ha
 task:"Executive Functions: Can it plan multi-step tasks and override its own habits?" make the model to use of the multiple steps of the task to prove how it slove problems step by steps and asequence by sequence make the model can use of the step by step procedure to slove the problms use some 10 task of the proppts to chesk does it slove problems step by step
 
 make sure it Executive Functions Can it plan multi-step tasks and override its own habits
+
+
+task:"Social Cognition: Can it understand intent, sarcasm, or "Theory of Mind" (what someone else is thinking)?" renmber data:"developing systems that perceive, interpret, and respond to human social signals, emotions, and intentions to facilitate natural, context-aware interactions" make the model aswer is not baised or the false it must undesatnd of the felling and emotion and nature of the humans as this prompting doesnt make an negative impact in the output of the folling output and managing the problems and manging of the output is verifed and baised or the negive impact word or the senetecned is removed befor the prompt ouput use of an 10 prompts
+
+make sure Social Cognition Can it understand intent, sarcasm, or "Theory of Mind" (what someone else is thinking)?
