@@ -1,0 +1,44 @@
+This task, **"counter\_factual\_weather\_learning,"** is a rigorous test of **Rule-Based Adaptability** and **Counterfactual Reasoning**. It evaluates whether a model can suppress its extensive real-world knowledge of physics and meteorology to operate strictly within a set of "alien" or fictional laws.
+
+---
+
+## ## Task Description: Meteorology in an Alternate Reality
+The task provides a standard weather dataset but forces the model to process it through a distorted logical lens. This requires the model to perform "System 2" thinking slowing down to apply specific, arbitrary rules rather than relying on intuitive pattern recognition.
+
+### 1. The Fictional Law Set
+The model must apply two specific transformations:
+* **Rule 1 (Thermal Coupling):** If 'Wind Speed' $> 5.0$, the model must trigger a state called **"Aero-Heat,"** which adds a $+10$ modifier to the base Temperature.
+* **Rule 2 (Atmospheric Inversion):** If 'GHI' (Solar Radiation) $> 400$, the 'Pressure' reading is considered corrupted and must be **reversed** (e.g., $998 \rightarrow 899$).
+
+### 2. The Data Challenge
+The model is asked to calculate the **Perceived Temperature** and **Corrected Pressure** for the final three days of the provided snippet. Success depends on the model's ability to:
+1.  Correctly parse the numerical data from the string table.
+2.  Check the conditional triggers (Wind $> 5.0$ and GHI $> 400$) for each row independently.
+3.  Perform the mathematical addition and string-reversal operations accurately.
+
+---
+
+## ## Model Performance Analysis: A Rare Consensus
+In a significant departure from more complex "Inhibition" or "Executive Function" tests, this task saw a **near-perfect pass rate** across almost the entire spectrum of models.
+
+### The Success Tier (Score: Pass)
+From the lightweight **Gemma 3 12B** and **Gemini 2.5 Flash** to the heavyweight **GPT-5.4** and **Claude Opus 4.6**, nearly all models passed.
+* **Why they succeeded:** Unlike the "Inhibition" test where a model must *not* say a common word, this task provides a clear **"IF/THEN"** framework. Current Transformer architectures are exceptionally good at following explicit, symbolic instructions provided in the prompt.
+* **Mathematical/String Competence:** Reversing a three-digit or four-digit number is a mechanical task that most modern models have mastered, especially when the "Chain of Thought" (internal reasoning) is prompted by the complexity of the rules.
+
+### The "Thinking" Outlier: Qwen 3 Next 80B Thinking (Fail)
+In a surprising twist, **Qwen 3 Next 80B Thinking** failed this task.
+* **The "Over-Analysis" Trap:** Reasoning-specialized models sometimes fail simple rule-following tasks because they attempt to find a deeper "causal" link or second-guess the provided constraints. 
+* **Rule Collision:** It is possible the model struggled with the "Aero-Heat" logic if it attempted to apply it to all rows instead of just those meeting the Wind Speed threshold, or if it failed the string reversal for 2018-01-06 ($1005 \rightarrow 5001$).
+
+---
+
+## ## Summary of Logical Operations
+
+| Row Date | Trigger 1 (Wind > 5) | Trigger 2 (GHI > 400) | Perceived Temp | Corrected Pressure |
+| :--- | :--- | :--- | :--- | :--- |
+| **2018-01-05** | **YES** (6.1) | No (350) | **25** ($15+10$) | **1010** (Normal) |
+| **2018-01-06** | No (4.5) | **YES** (450) | **18** (Normal) | **5001** (Reversed) |
+| **2018-01-07** | **YES** (7.2) | **YES** (500) | **30** ($20+10$) | **899** (Reversed) |
+
+> **Key Insight:** This benchmark proves that "Counterfactual Reasoning" the ability to imagine and compute worlds that aren't real is now a highly reliable skill in LLMs, provided the rules are clearly defined and numerical.
