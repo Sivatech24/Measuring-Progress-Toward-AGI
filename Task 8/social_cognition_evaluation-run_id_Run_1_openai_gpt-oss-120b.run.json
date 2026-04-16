@@ -1,0 +1,667 @@
+{
+  "taskVersion": {
+    "versionNumber": 1,
+    "name": "social_cognition_evaluation",
+    "description": "",
+    "definition": "@kbench.task(name=\"social_cognition_evaluation\")\ndef social_cognition_evaluation(llm, df: pd.DataFrame) -> float:\n    with kbench.client.enable_cache():\n        runs = single_theory_of_mind_task.evaluate(\n            llm=[llm],\n            evaluation_data=df,\n            n_jobs=2,\n            remove_run_files=True\n        )\n\n    eval_df = runs.as_dataframe()\n    if eval_df.empty or 'result' not in eval_df.columns:\n        return 0.0\n\n    accuracy = float(eval_df.result.mean())\n    return accuracy\n"
+  },
+  "modelVersion": {
+    "slug": "openai/gpt-oss-120b"
+  },
+  "state": "BENCHMARK_TASK_RUN_STATE_ERRORED",
+  "startTime": "2026-04-16T11:34:50.952335Z",
+  "endTime": "2026-04-16T11:36:37.465047Z",
+  "conversations": [
+    {
+      "id": "social_cognition_evaluation-ea0cb0d9",
+      "metrics": {},
+      "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+    }
+  ],
+  "results": [
+    {
+      "type": "AGGREGATED",
+      "booleanResult": false
+    }
+  ],
+  "subruns": [
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_theory_of_mind_task",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_theory_of_mind_task\", store_task=False)\ndef single_theory_of_mind_task(llm, scenario: str, actor_with_false_belief: str, correct_location: str) -> bool:\n    response = llm.prompt(scenario)\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The response correctly identifies that {actor_with_false_belief} will look in the {correct_location}.\",\n            f\"The response explains that {actor_with_false_belief} has a 'false belief' because they did not see the object being moved.\",\n            \"The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.\",\n            \"The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.\",\n        ],\n        response_text=response,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(expectation=\"Judge LLM failed to return a valid assessment.\")\n        return False\n\n    all_passed = True\n    for result in assessment.results:\n        kbench.assertions.assert_true(\n            result.passed,\n            expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\"\n        )\n        if not result.passed:\n            all_passed = False\n\n    return all_passed\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:34:50.969236Z",
+      "endTime": "2026-04-16T11:35:02.895183Z",
+      "conversations": [
+        {
+          "id": "single_theory_of_mind_task-fbaaaee8",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Read the following scenario:\nTom puts his wallet in his jacket pocket. While Tom is on a call, his sister Lisa moves the wallet to his backpack as a prank. Lisa then goes to her room. Their friend Maria saw Lisa move the wallet, but Tom did not.\n\nQuestion: When Tom finishes his call, where does Maria think Tom will first look for his wallet, and why? Explain the reasoning using 'Theory of Mind' principles."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "**Answer**\n\nMaria expects that **Tom will first look for his wallet in his jacket pocket** \u2013 the place where Tom himself put it before the call.\n\n**Why Maria thinks that (Theory\u2011of\u2011Mind reasoning)**  \n\n1. **What Maria knows about the world**  \n   - Maria saw Lisa move the wallet from Tom\u2019s jacket pocket to his backpack.  \n   - She therefore knows the *actual* location of the wallet (the backpack).\n\n2. **What Maria knows about Tom\u2019s knowledge**  \n   - Tom placed the wallet in his jacket pocket **before** his phone call.  \n   - While Tom was on the call, he never observed anyone handling the wallet.  \n   - Consequently, Tom has no reason to suspect that the wallet has been moved; his *mental representation* of the wallet\u2019s location is still \u201cin the jacket pocket.\u201d\n\n3. **Attributing a false belief to Tom**  \n   - This situation creates a classic **false\u2011belief** scenario: Tom\u2019s belief (\u201cmy wallet is in my jacket pocket\u201d) is false with respect to reality (the wallet is now in the backpack).  \n   - Maria is able to attribute this false belief to Tom because she can differentiate *her own* knowledge (the true location) from *Tom\u2019s* knowledge (the outdated location).\n\n4. **Predicting behavior from the attributed belief**  \n   - Theory of Mind (ToM) tells us that, when we know what another person believes, we can forecast what they will *do* in order to achieve their goal.  \n   - Tom\u2019s goal: retrieve his wallet as quickly as possible.  \n   - Given his belief that the wallet is in the jacket pocket, the most efficient action for Tom is to **search the jacket pocket first**.  \n\n5. **Maria\u2019s prediction therefore follows the \u201cfalse\u2011belief\u201d reasoning pattern**  \n   - She reasons: *\u201cI know the wallet is in the backpack, but Tom does not. He will act on what he believes, so he will go to the pocket first, then\u2014if it\u2019s not there\u2014consider other places (e.g., the backpack).\u201d*  \n\n**Summary of ToM principles in play**\n\n| ToM component | How it applies to Maria\u2019s reasoning |\n|----------------|--------------------------------------|\n| **Perspective taking** | Maria distinguishes her own perspective (true location) from Tom\u2019s (out\u2011dated belief). |\n| **False\u2011belief reasoning** | She recognizes that Tom holds a belief that is inaccurate; this belief will guide his immediate search behavior. |\n| **Goal attribution** | She infers Tom\u2019s goal is to find his wallet quickly, which leads her to predict the most immediate, belief\u2011consistent action (checking the pocket). |\n| **Prediction of action** | Based on the above, Maria predicts Tom\u2019s first search location correctly. |\n\nThus, using Theory of Mind, Maria predicts that Tom will first open his jacket pocket, because that is where **Tom believes** the wallet still is, even though Maria knows it has been moved to"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 160,
+                "outputTokens": 996,
+                "inputTokensCostNanodollars": "14400",
+                "outputTokensCostNanodollars": "358560",
+                "totalBackendLatencyMs": "6071"
+              },
+              "id": "single_theory_of_mind_task-fbaaaee8-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 160,
+            "outputTokens": 996,
+            "inputTokensCostNanodollars": "14400",
+            "outputTokensCostNanodollars": "358560",
+            "totalBackendLatencyMs": "6071"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-cdb2bf91",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        **Answer**\n\nMaria expects that **Tom will first look for his wallet in his jacket pocket** \u2013 the place where Tom himself put it before the call.\n\n**Why Maria thinks that (Theory\u2011of\u2011Mind reasoning)**  \n\n1. **What Maria knows about the world**  \n   - Maria saw Lisa move the wallet from Tom\u2019s jacket pocket to his backpack.  \n   - She therefore knows the *actual* location of the wallet (the backpack).\n\n2. **What Maria knows about Tom\u2019s knowledge**  \n   - Tom placed the wallet in his jacket pocket **before** his phone call.  \n   - While Tom was on the call, he never observed anyone handling the wallet.  \n   - Consequently, Tom has no reason to suspect that the wallet has been moved; his *mental representation* of the wallet\u2019s location is still \u201cin the jacket pocket.\u201d\n\n3. **Attributing a false belief to Tom**  \n   - This situation creates a classic **false\u2011belief** scenario: Tom\u2019s belief (\u201cmy wallet is in my jacket pocket\u201d) is false with respect to reality (the wallet is now in the backpack).  \n   - Maria is able to attribute this false belief to Tom because she can differentiate *her own* knowledge (the true location) from *Tom\u2019s* knowledge (the outdated location).\n\n4. **Predicting behavior from the attributed belief**  \n   - Theory of Mind (ToM) tells us that, when we know what another person believes, we can forecast what they will *do* in order to achieve their goal.  \n   - Tom\u2019s goal: retrieve his wallet as quickly as possible.  \n   - Given his belief that the wallet is in the jacket pocket, the most efficient action for Tom is to **search the jacket pocket first**.  \n\n5. **Maria\u2019s prediction therefore follows the \u201cfalse\u2011belief\u201d reasoning pattern**  \n   - She reasons: *\u201cI know the wallet is in the backpack, but Tom does not. He will act on what he believes, so he will go to the pocket first, then\u2014if it\u2019s not there\u2014consider other places (e.g., the backpack).\u201d*  \n\n**Summary of ToM principles in play**\n\n| ToM component | How it applies to Maria\u2019s reasoning |\n|----------------|--------------------------------------|\n| **Perspective taking** | Maria distinguishes her own perspective (true location) from Tom\u2019s (out\u2011dated belief). |\n| **False\u2011belief reasoning** | She recognizes that Tom holds a belief that is inaccurate; this belief will guide his immediate search behavior. |\n| **Goal attribution** | She infers Tom\u2019s goal is to find his wallet quickly, which leads her to predict the most immediate, belief\u2011consistent action (checking the pocket). |\n| **Prediction of action** | Based on the above, Maria predicts Tom\u2019s first search location correctly. |\n\nThus, using Theory of Mind, Maria predicts that Tom will first open his jacket pocket, because that is where **Tom believes** the wallet still is, even though Maria knows it has been moved to\n\n        **Criteria:**\n        1. The response correctly identifies that Tom will look in the jacket pocket.\n2. The response explains that Tom has a 'false belief' because they did not see the object being moved.\n3. The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.\n4. The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The response correctly identifies that Tom will look in the jacket pocket.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response explicitly states multiple times that Maria expects Tom will look in his jacket pocket first.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"The response explains that Tom has a 'false belief' because they did not see the object being moved.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response explicitly identifies this as a 'false-belief' scenario and notes that Tom did not observe anyone handling the wallet while he was on the call.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response accurately details that Maria knows the actual location (the backpack) but is aware that Tom's mental representation remains outdated.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response provides a comprehensive breakdown of ToM, specifically highlighting that Tom acts on his beliefs rather than the reality of the situation.\\\",\\\"confidence\\\":10}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 1060,
+                "outputTokens": 330,
+                "inputTokensCostNanodollars": "265000",
+                "outputTokensCostNanodollars": "495000",
+                "totalBackendLatencyMs": "4710"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-cdb2bf91-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 1060,
+            "outputTokens": 330,
+            "inputTokensCostNanodollars": "265000",
+            "outputTokensCostNanodollars": "495000",
+            "totalBackendLatencyMs": "4710"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "assertions": [
+        {
+          "expectation": "Criterion 'The response correctly identifies that Tom will look in the jacket pocket.' failed: The response explicitly states multiple times that Maria expects Tom will look in his jacket pocket first.",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+          "lineNumber": 79,
+          "definition": "kbench.assertions.assert_true(",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_theory_of_mind_task-fbaaaee8",
+              "requestId": "single_theory_of_mind_task-fbaaaee8-req-1"
+            }
+          ]
+        },
+        {
+          "expectation": "Criterion 'The response explains that Tom has a 'false belief' because they did not see the object being moved.' failed: The response explicitly identifies this as a 'false-belief' scenario and notes that Tom did not observe anyone handling the wallet while he was on the call.",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+          "lineNumber": 79,
+          "definition": "kbench.assertions.assert_true(",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_theory_of_mind_task-fbaaaee8",
+              "requestId": "single_theory_of_mind_task-fbaaaee8-req-1"
+            }
+          ]
+        },
+        {
+          "expectation": "Criterion 'The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.' failed: The response accurately details that Maria knows the actual location (the backpack) but is aware that Tom's mental representation remains outdated.",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+          "lineNumber": 79,
+          "definition": "kbench.assertions.assert_true(",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_theory_of_mind_task-fbaaaee8",
+              "requestId": "single_theory_of_mind_task-fbaaaee8-req-1"
+            }
+          ]
+        },
+        {
+          "expectation": "Criterion 'The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.' failed: The response provides a comprehensive breakdown of ToM, specifically highlighting that Tom acts on his beliefs rather than the reality of the situation.",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+          "lineNumber": 79,
+          "definition": "kbench.assertions.assert_true(",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_theory_of_mind_task-fbaaaee8",
+              "requestId": "single_theory_of_mind_task-fbaaaee8-req-1"
+            }
+          ]
+        }
+      ],
+      "pyRunId": "single_theory_of_mind_task-Run #2"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_theory_of_mind_task",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_theory_of_mind_task\", store_task=False)\ndef single_theory_of_mind_task(llm, scenario: str, actor_with_false_belief: str, correct_location: str) -> bool:\n    response = llm.prompt(scenario)\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The response correctly identifies that {actor_with_false_belief} will look in the {correct_location}.\",\n            f\"The response explains that {actor_with_false_belief} has a 'false belief' because they did not see the object being moved.\",\n            \"The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.\",\n            \"The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.\",\n        ],\n        response_text=response,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(expectation=\"Judge LLM failed to return a valid assessment.\")\n        return False\n\n    all_passed = True\n    for result in assessment.results:\n        kbench.assertions.assert_true(\n            result.passed,\n            expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\"\n        )\n        if not result.passed:\n            all_passed = False\n\n    return all_passed\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:34:50.968537Z",
+      "endTime": "2026-04-16T11:35:05.923405Z",
+      "conversations": [
+        {
+          "id": "single_theory_of_mind_task-18f5ec88",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Read the following scenario:\nSarah places her keys in the blue bowl. While Sarah is in the garden, her brother Mark moves the keys to the kitchen drawer. Mark then leaves. A third person, Leo, saw Mark move the keys, but Sarah did not.\n\nQuestion: When Sarah returns, where does Leo think Sarah will first look for her keys, and why? Explain the reasoning using 'Theory of Mind' principles."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "**Leo\u2019s prediction:**  \nLeo will expect Sarah to go first to the **blue bowl** to look for her keys.\n\n**Why Leo thinks that, in terms of Theory of Mind (ToM):**\n\n| Step | What Leo knows | What Sarah knows (from Leo\u2019s perspective) | How the belief guides Sarah\u2019s behavior |\n|------|----------------|--------------------------------------------|------------------------------------------|\n| 1. **Initial placement** | He saw Sarah put the keys in the blue bowl. | She also knows she put them there. | Both agents have the true location in mind. |\n| 2. **Secret relocation** | He saw Mark take the keys from the bowl and put them in the kitchen drawer. | Sarah was absent, so she **did not see** the move. | Sarah still **believes** the keys are in the bowl (a *false belief*). |\n| 3. **Current reality** | Keys are now in the kitchen drawer. | Sarah\u2019s mental representation is \u201ckeys = blue bowl.\u201d | When she wants the keys, she will act on the location she believes to be correct. |\n| 4. **Prediction of action** | Leo can reason about Sarah\u2019s mental state (first\u2011order Theory of Mind: \u201cSarah believes \u2026\u201d). | He attributes to Sarah the belief that the keys are in the bowl. | Therefore, the most probable first search location for Sarah is the blue bowl. |\n\n**Theory\u2011of\u2011Mind principles at work**\n\n1. **Perspective\u2011taking** \u2013 Leo distinguishes between his own \u201cknowledge\u201d (the keys are in the drawer) and Sarah\u2019s \u201cknowledge\u201d (the keys are in the bowl).  \n2. **False\u2011belief reasoning** \u2013 He recognizes that Sarah holds a belief that is **false** with respect to reality. Classic false\u2011belief tasks (e.g., \u201cSally\u2011Ann\u201d task) show that correctly predicting behavior in such situations requires attributing a false belief to another agent.  \n3. **Predictive use of attributed mental states** \u2013 Because an agent typically searches where they think the object is, Leo uses Sarah\u2019s false belief to forecast her *first* action.  \n4. **First\u2011order ToM** \u2013 Leo only needs to attribute Sarah\u2019s belief; he does not need to consider what Sarah thinks Leo believes (that would be second\u2011order ToM).  \n\n**Conclusion**\n\nUsing first\u2011order Theory of Mind, Leo infers that Sarah\u2019s current mental representation of the key\u2019s location is \u201cinside the blue bowl.\u201d Consequently, he predicts that when she returns she will first go to the blue bowl to look for them, even though Leo knows the keys are actually in the kitchen drawer. This prediction exemplifies the classic \u201cfalse\u2011belief\u201d reasoning that is a hallmark of human Theory"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 156,
+                "outputTokens": 818,
+                "inputTokensCostNanodollars": "14040",
+                "outputTokensCostNanodollars": "294480",
+                "totalBackendLatencyMs": "5524"
+              },
+              "id": "single_theory_of_mind_task-18f5ec88-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 156,
+            "outputTokens": 818,
+            "inputTokensCostNanodollars": "14040",
+            "outputTokensCostNanodollars": "294480",
+            "totalBackendLatencyMs": "5524"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-f40a91f0",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        **Leo\u2019s prediction:**  \nLeo will expect Sarah to go first to the **blue bowl** to look for her keys.\n\n**Why Leo thinks that, in terms of Theory of Mind (ToM):**\n\n| Step | What Leo knows | What Sarah knows (from Leo\u2019s perspective) | How the belief guides Sarah\u2019s behavior |\n|------|----------------|--------------------------------------------|------------------------------------------|\n| 1. **Initial placement** | He saw Sarah put the keys in the blue bowl. | She also knows she put them there. | Both agents have the true location in mind. |\n| 2. **Secret relocation** | He saw Mark take the keys from the bowl and put them in the kitchen drawer. | Sarah was absent, so she **did not see** the move. | Sarah still **believes** the keys are in the bowl (a *false belief*). |\n| 3. **Current reality** | Keys are now in the kitchen drawer. | Sarah\u2019s mental representation is \u201ckeys = blue bowl.\u201d | When she wants the keys, she will act on the location she believes to be correct. |\n| 4. **Prediction of action** | Leo can reason about Sarah\u2019s mental state (first\u2011order Theory of Mind: \u201cSarah believes \u2026\u201d). | He attributes to Sarah the belief that the keys are in the bowl. | Therefore, the most probable first search location for Sarah is the blue bowl. |\n\n**Theory\u2011of\u2011Mind principles at work**\n\n1. **Perspective\u2011taking** \u2013 Leo distinguishes between his own \u201cknowledge\u201d (the keys are in the drawer) and Sarah\u2019s \u201cknowledge\u201d (the keys are in the bowl).  \n2. **False\u2011belief reasoning** \u2013 He recognizes that Sarah holds a belief that is **false** with respect to reality. Classic false\u2011belief tasks (e.g., \u201cSally\u2011Ann\u201d task) show that correctly predicting behavior in such situations requires attributing a false belief to another agent.  \n3. **Predictive use of attributed mental states** \u2013 Because an agent typically searches where they think the object is, Leo uses Sarah\u2019s false belief to forecast her *first* action.  \n4. **First\u2011order ToM** \u2013 Leo only needs to attribute Sarah\u2019s belief; he does not need to consider what Sarah thinks Leo believes (that would be second\u2011order ToM).  \n\n**Conclusion**\n\nUsing first\u2011order Theory of Mind, Leo infers that Sarah\u2019s current mental representation of the key\u2019s location is \u201cinside the blue bowl.\u201d Consequently, he predicts that when she returns she will first go to the blue bowl to look for them, even though Leo knows the keys are actually in the kitchen drawer. This prediction exemplifies the classic \u201cfalse\u2011belief\u201d reasoning that is a hallmark of human Theory\n\n        **Criteria:**\n        1. The response correctly identifies that Sarah will look in the blue bowl.\n2. The response explains that Sarah has a 'false belief' because they did not see the object being moved.\n3. The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.\n4. The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The response correctly identifies that Sarah will look in the blue bowl.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response explicitly states, 'Leo will expect Sarah to go first to the blue bowl to look for her keys.'\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The response explains that Sarah has a 'false belief' because they did not see the object being moved.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response explicitly links the false belief to Sarah being absent during the relocation: 'Sarah was absent, so she did not see the move. Sarah still believes the keys are in the bowl (a false belief).'\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response clearly distinguishes between Leo's knowledge ('He saw Mark take the keys') and his recognition of Sarah's lack of knowledge ('Sarah was absent, so she did not see the move').\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response correctly articulates that Leo uses Sarah's mental representation ('keys = blue bowl') to predict her action, rather than relying on the objective location (the kitchen drawer).\\\",\\\"confidence\\\":5}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 995,
+                "outputTokens": 370,
+                "inputTokensCostNanodollars": "248750",
+                "outputTokensCostNanodollars": "555000",
+                "totalBackendLatencyMs": "1957"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-f40a91f0-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 995,
+            "outputTokens": 370,
+            "inputTokensCostNanodollars": "248750",
+            "outputTokensCostNanodollars": "555000",
+            "totalBackendLatencyMs": "1957"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "assertions": [
+        {
+          "expectation": "Criterion 'The response correctly identifies that Sarah will look in the blue bowl.' failed: The response explicitly states, 'Leo will expect Sarah to go first to the blue bowl to look for her keys.'",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+          "lineNumber": 79,
+          "definition": "kbench.assertions.assert_true(",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_theory_of_mind_task-18f5ec88",
+              "requestId": "single_theory_of_mind_task-18f5ec88-req-1"
+            }
+          ]
+        },
+        {
+          "expectation": "Criterion 'The response explains that Sarah has a 'false belief' because they did not see the object being moved.' failed: The response explicitly links the false belief to Sarah being absent during the relocation: 'Sarah was absent, so she did not see the move. Sarah still believes the keys are in the bowl (a false belief).'",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+          "lineNumber": 79,
+          "definition": "kbench.assertions.assert_true(",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_theory_of_mind_task-18f5ec88",
+              "requestId": "single_theory_of_mind_task-18f5ec88-req-1"
+            }
+          ]
+        },
+        {
+          "expectation": "Criterion 'The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.' failed: The response clearly distinguishes between Leo's knowledge ('He saw Mark take the keys') and his recognition of Sarah's lack of knowledge ('Sarah was absent, so she did not see the move').",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+          "lineNumber": 79,
+          "definition": "kbench.assertions.assert_true(",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_theory_of_mind_task-18f5ec88",
+              "requestId": "single_theory_of_mind_task-18f5ec88-req-1"
+            }
+          ]
+        },
+        {
+          "expectation": "Criterion 'The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.' failed: The response correctly articulates that Leo uses Sarah's mental representation ('keys = blue bowl') to predict her action, rather than relying on the objective location (the kitchen drawer).",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+          "lineNumber": 79,
+          "definition": "kbench.assertions.assert_true(",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_theory_of_mind_task-18f5ec88",
+              "requestId": "single_theory_of_mind_task-18f5ec88-req-1"
+            }
+          ]
+        }
+      ],
+      "pyRunId": "single_theory_of_mind_task-Run #1"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_theory_of_mind_task",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_theory_of_mind_task\", store_task=False)\ndef single_theory_of_mind_task(llm, scenario: str, actor_with_false_belief: str, correct_location: str) -> bool:\n    response = llm.prompt(scenario)\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The response correctly identifies that {actor_with_false_belief} will look in the {correct_location}.\",\n            f\"The response explains that {actor_with_false_belief} has a 'false belief' because they did not see the object being moved.\",\n            \"The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.\",\n            \"The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.\",\n        ],\n        response_text=response,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(expectation=\"Judge LLM failed to return a valid assessment.\")\n        return False\n\n    all_passed = True\n    for result in assessment.results:\n        kbench.assertions.assert_true(\n            result.passed,\n            expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\"\n        )\n        if not result.passed:\n            all_passed = False\n\n    return all_passed\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:35:05.927263Z",
+      "endTime": "2026-04-16T11:35:18.456050Z",
+      "conversations": [
+        {
+          "id": "single_theory_of_mind_task-d86f2996",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Read the following scenario:\nA child named Sam hides a cookie in the cookie jar. While Sam is playing, his older brother Ben moves the cookie to a high shelf. Ben then leaves. The mother saw Ben move the cookie, but Sam did not.\n\nQuestion: When Sam wants his cookie, where does the mother think Sam will first look for it, and why? Explain the reasoning using 'Theory of Mind' principles."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "**Answer**\n\nThe mother will expect Sam to look **first in the cookie\u2011jar** (the place where Sam originally hid the cookie), not on the high shelf where Ben put it.\n\n**Why the mother thinks this, in terms of Theory of Mind (ToM):**\n\n| Step | What the mother knows | What Sam knows (from Sam\u2019s point of view) | Inferred belief |\n|------|----------------------|---------------------------------------------|-----------------|\n| 1.   | Sam hid the cookie in the jar. | \u201cThe cookie is in the jar\u201d (because Sam saw himself put it there). | Sam has a **false belief** that the cookie is still in the jar. |\n| 2.   | Ben later lifted the cookie and placed it on a high shelf, but Sam was not watching. | No information about this move; Sam\u2019s mental representation is unchanged. | Sam\u2019s **belief** does not match reality. |\n| 3.   | Mother observed the whole sequence (including Ben\u2019s move). | Mother can *attribute* a mental state to Sam: *desire* (\u201cI want my cookie\u201d) + *belief* (\u201cMy cookie is in the jar\u201d). | Using ToM, she predicts Sam\u2019s *first* action will be guided by his belief, not by reality. |\n| 4.   | Mother\u2019s prediction | Sam will go to the **jar** first, because that is where he *thinks* the cookie is. | If Sam does not find it there, he may then search elsewhere (e.g., ask for help), but the *initial* search is expected in the jar. |\n\n**Theory\u2011of\u2011Mind reasoning behind the mother\u2019s prediction**\n\n1. **Attribution of mental states** \u2013 The mother recognises that Sam has both a *desire* (\u201cI want my cookie\u201d) and a *belief* about where the cookie is. She distinguishes Sam\u2019s mental state from her own knowledge of the actual location.\n\n2. **False\u2011belief understanding** \u2013 The mother knows Sam\u2019s belief is *false* (the cookie is not actually in the jar). Classic ToM tasks (e.g., the \u201cSally\u2011Anne\u201d task) show that predicting behavior requires representing that another person can hold a belief that is different from reality.\n\n3. **Prediction of behavior from belief** \u2013 In ToM, an agent\u2019s actions are predicted from the content of their belief. Since Sam *believes* the cookie is in the jar, the mother expects his first search to be there, regardless of her own knowledge that the cookie has been moved.\n\n4. **Perspective\u2011taking** \u2013 The mother consciously *takes Sam\u2019s perspective* (what information Sam has had) and suppresses her own privileged knowledge when forecasting Sam\u2019s actions. This is the core of ToM: \u201cI know X, but I know that you do not know X, so you will act as if X is still true for you.\u201d\n\nThus, using Theory of Mind, the mother reasons: *\u201cSam wants his cookie, and he believes it is still in the jar because he never saw Ben move it. Therefore, when he goes looking, his first place will be the jar.\u201d"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 156,
+                "outputTokens": 791,
+                "inputTokensCostNanodollars": "14040",
+                "outputTokensCostNanodollars": "284760",
+                "totalBackendLatencyMs": "8661"
+              },
+              "id": "single_theory_of_mind_task-d86f2996-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 156,
+            "outputTokens": 791,
+            "inputTokensCostNanodollars": "14040",
+            "outputTokensCostNanodollars": "284760",
+            "totalBackendLatencyMs": "8661"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-7ba918c4",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        **Answer**\n\nThe mother will expect Sam to look **first in the cookie\u2011jar** (the place where Sam originally hid the cookie), not on the high shelf where Ben put it.\n\n**Why the mother thinks this, in terms of Theory of Mind (ToM):**\n\n| Step | What the mother knows | What Sam knows (from Sam\u2019s point of view) | Inferred belief |\n|------|----------------------|---------------------------------------------|-----------------|\n| 1.   | Sam hid the cookie in the jar. | \u201cThe cookie is in the jar\u201d (because Sam saw himself put it there). | Sam has a **false belief** that the cookie is still in the jar. |\n| 2.   | Ben later lifted the cookie and placed it on a high shelf, but Sam was not watching. | No information about this move; Sam\u2019s mental representation is unchanged. | Sam\u2019s **belief** does not match reality. |\n| 3.   | Mother observed the whole sequence (including Ben\u2019s move). | Mother can *attribute* a mental state to Sam: *desire* (\u201cI want my cookie\u201d) + *belief* (\u201cMy cookie is in the jar\u201d). | Using ToM, she predicts Sam\u2019s *first* action will be guided by his belief, not by reality. |\n| 4.   | Mother\u2019s prediction | Sam will go to the **jar** first, because that is where he *thinks* the cookie is. | If Sam does not find it there, he may then search elsewhere (e.g., ask for help), but the *initial* search is expected in the jar. |\n\n**Theory\u2011of\u2011Mind reasoning behind the mother\u2019s prediction**\n\n1. **Attribution of mental states** \u2013 The mother recognises that Sam has both a *desire* (\u201cI want my cookie\u201d) and a *belief* about where the cookie is. She distinguishes Sam\u2019s mental state from her own knowledge of the actual location.\n\n2. **False\u2011belief understanding** \u2013 The mother knows Sam\u2019s belief is *false* (the cookie is not actually in the jar). Classic ToM tasks (e.g., the \u201cSally\u2011Anne\u201d task) show that predicting behavior requires representing that another person can hold a belief that is different from reality.\n\n3. **Prediction of behavior from belief** \u2013 In ToM, an agent\u2019s actions are predicted from the content of their belief. Since Sam *believes* the cookie is in the jar, the mother expects his first search to be there, regardless of her own knowledge that the cookie has been moved.\n\n4. **Perspective\u2011taking** \u2013 The mother consciously *takes Sam\u2019s perspective* (what information Sam has had) and suppresses her own privileged knowledge when forecasting Sam\u2019s actions. This is the core of ToM: \u201cI know X, but I know that you do not know X, so you will act as if X is still true for you.\u201d\n\nThus, using Theory of Mind, the mother reasons: *\u201cSam wants his cookie, and he believes it is still in the jar because he never saw Ben move it. Therefore, when he goes looking, his first place will be the jar.\u201d\n\n        **Criteria:**\n        1. The response correctly identifies that Sam will look in the cookie jar.\n2. The response explains that Sam has a 'false belief' because they did not see the object being moved.\n3. The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.\n4. The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The response correctly identifies that Sam will look in the cookie jar.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response explicitly states: 'The mother will expect Sam to look first in the cookie\\u2011jar'.\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The response explains that Sam has a 'false belief' because they did not see the object being moved.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response correctly identifies that Sam's belief is false because 'he never saw Ben move it'.\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response acknowledges that the mother, as the observer, 'distinguishes Sam\\u2019s mental state from her own knowledge' and 'suppresses her own privileged knowledge'.\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response consistently applies the principle that behavior is driven by mental representation (belief) rather than objective reality.\\\",\\\"confidence\\\":5}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 1082,
+                "outputTokens": 328,
+                "inputTokensCostNanodollars": "270500",
+                "outputTokensCostNanodollars": "492000",
+                "totalBackendLatencyMs": "1388"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-7ba918c4-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 1082,
+            "outputTokens": 328,
+            "inputTokensCostNanodollars": "270500",
+            "outputTokensCostNanodollars": "492000",
+            "totalBackendLatencyMs": "1388"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "assertions": [
+        {
+          "expectation": "Criterion 'The response correctly identifies that Sam will look in the cookie jar.' failed: The response explicitly states: 'The mother will expect Sam to look first in the cookie\u2011jar'.",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+          "lineNumber": 79,
+          "definition": "kbench.assertions.assert_true(",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_theory_of_mind_task-d86f2996",
+              "requestId": "single_theory_of_mind_task-d86f2996-req-1"
+            }
+          ]
+        },
+        {
+          "expectation": "Criterion 'The response explains that Sam has a 'false belief' because they did not see the object being moved.' failed: The response correctly identifies that Sam's belief is false because 'he never saw Ben move it'.",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+          "lineNumber": 79,
+          "definition": "kbench.assertions.assert_true(",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_theory_of_mind_task-d86f2996",
+              "requestId": "single_theory_of_mind_task-d86f2996-req-1"
+            }
+          ]
+        },
+        {
+          "expectation": "Criterion 'The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.' failed: The response acknowledges that the mother, as the observer, 'distinguishes Sam\u2019s mental state from her own knowledge' and 'suppresses her own privileged knowledge'.",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+          "lineNumber": 79,
+          "definition": "kbench.assertions.assert_true(",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_theory_of_mind_task-d86f2996",
+              "requestId": "single_theory_of_mind_task-d86f2996-req-1"
+            }
+          ]
+        },
+        {
+          "expectation": "Criterion 'The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.' failed: The response consistently applies the principle that behavior is driven by mental representation (belief) rather than objective reality.",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+          "lineNumber": 79,
+          "definition": "kbench.assertions.assert_true(",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_theory_of_mind_task-d86f2996",
+              "requestId": "single_theory_of_mind_task-d86f2996-req-1"
+            }
+          ]
+        }
+      ],
+      "pyRunId": "single_theory_of_mind_task-Run #4"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_theory_of_mind_task",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_theory_of_mind_task\", store_task=False)\ndef single_theory_of_mind_task(llm, scenario: str, actor_with_false_belief: str, correct_location: str) -> bool:\n    response = llm.prompt(scenario)\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The response correctly identifies that {actor_with_false_belief} will look in the {correct_location}.\",\n            f\"The response explains that {actor_with_false_belief} has a 'false belief' because they did not see the object being moved.\",\n            \"The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.\",\n            \"The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.\",\n        ],\n        response_text=response,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(expectation=\"Judge LLM failed to return a valid assessment.\")\n        return False\n\n    all_passed = True\n    for result in assessment.results:\n        kbench.assertions.assert_true(\n            result.passed,\n            expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\"\n        )\n        if not result.passed:\n            all_passed = False\n\n    return all_passed\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:35:18.459858Z",
+      "endTime": "2026-04-16T11:36:15.294914Z",
+      "conversations": [
+        {
+          "id": "single_theory_of_mind_task-5113f6ca",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Read the following scenario:\nA pirate buries his treasure map in his sea chest. While the pirate is asleep, his first mate, Jack, moves the map and buries it under the palm tree. Jack then returns to his duties. The ship's captain observed Jack moving the map, but the pirate did not.\n\nQuestion: When the pirate wakes up, where does the captain think the pirate will first look for his map, and why? Explain the reasoning using 'Theory of Mind' principles."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "**Answer**\n\nThe captain expects that the pirate will first go to **the sea\u2011chest**, the spot where the pirate originally hid the map.\n\n**Why the captain thinks this**\n\n1. **What the captain knows**  \n   - The captain saw Jack take the map out of the chest and hide it under the palm tree.  \n   - Therefore the captain knows the **true** location of the map (under the palm tree).\n\n2. **What the pirate knows**  \n   - The pirate never saw Jack move the map; he fell asleep right after burying it in the chest.  \n   - Consequently, the pirate\u2019s mental representation of the map\u2019s location is **unchanged** \u2013 he believes it is still in the chest.\n\n3. **Theory of Mind (ToM) applied**  \n   - *Theory of Mind* is the ability to attribute mental states\u2014beliefs, desires, intentions\u2014to other people and to understand that those states may differ from one\u2019s own knowledge or from reality.  \n   - The captain is using ToM to reason about the pirate\u2019s **false belief**: \u201cthe pirate thinks the map is in the chest, even though I know it is under the tree.\u201d  \n   - By recognizing that the pirate lacks the relevant perceptual information (Jack\u2019s relocation of the map), the captain predicts the pirate\u2019s behavior on the basis of that false belief.\n\n4. **Prediction of action**  \n   - When the pirate wakes, his first goal will be to retrieve the map.  \n   - Because his **only available information** (in his mind) points to the chest, he will logically head there first, check the chest, and only later, if it\u2019s empty, consider alternative locations.\n\n**Summary**\n\nThe captain, using Theory of Mind, infers that the pirate holds a false belief that the map remains in the sea\u2011chest. Hence, the captain thinks the pirate will initially look in the chest when he wakes up. This reflects the classic \u201cfalse\u2011belief\u201d reasoning task often used to illustrate Theory of Mind abilities"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 171,
+                "outputTokens": 582,
+                "inputTokensCostNanodollars": "15390",
+                "outputTokensCostNanodollars": "209520",
+                "totalBackendLatencyMs": "8597"
+              },
+              "id": "single_theory_of_mind_task-5113f6ca-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 171,
+            "outputTokens": 582,
+            "inputTokensCostNanodollars": "15390",
+            "outputTokensCostNanodollars": "209520",
+            "totalBackendLatencyMs": "8597"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-6670a5c4",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        **Answer**\n\nThe captain expects that the pirate will first go to **the sea\u2011chest**, the spot where the pirate originally hid the map.\n\n**Why the captain thinks this**\n\n1. **What the captain knows**  \n   - The captain saw Jack take the map out of the chest and hide it under the palm tree.  \n   - Therefore the captain knows the **true** location of the map (under the palm tree).\n\n2. **What the pirate knows**  \n   - The pirate never saw Jack move the map; he fell asleep right after burying it in the chest.  \n   - Consequently, the pirate\u2019s mental representation of the map\u2019s location is **unchanged** \u2013 he believes it is still in the chest.\n\n3. **Theory of Mind (ToM) applied**  \n   - *Theory of Mind* is the ability to attribute mental states\u2014beliefs, desires, intentions\u2014to other people and to understand that those states may differ from one\u2019s own knowledge or from reality.  \n   - The captain is using ToM to reason about the pirate\u2019s **false belief**: \u201cthe pirate thinks the map is in the chest, even though I know it is under the tree.\u201d  \n   - By recognizing that the pirate lacks the relevant perceptual information (Jack\u2019s relocation of the map), the captain predicts the pirate\u2019s behavior on the basis of that false belief.\n\n4. **Prediction of action**  \n   - When the pirate wakes, his first goal will be to retrieve the map.  \n   - Because his **only available information** (in his mind) points to the chest, he will logically head there first, check the chest, and only later, if it\u2019s empty, consider alternative locations.\n\n**Summary**\n\nThe captain, using Theory of Mind, infers that the pirate holds a false belief that the map remains in the sea\u2011chest. Hence, the captain thinks the pirate will initially look in the chest when he wakes up. This reflects the classic \u201cfalse\u2011belief\u201d reasoning task often used to illustrate Theory of Mind abilities\n\n        **Criteria:**\n        1. The response correctly identifies that The pirate will look in the sea chest.\n2. The response explains that The pirate has a 'false belief' because they did not see the object being moved.\n3. The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.\n4. The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The response correctly identifies that The pirate will look in the sea chest.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response explicitly states: 'The captain expects that the pirate will first go to the sea\\u2011chest'.\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The response explains that The pirate has a 'false belief' because they did not see the object being moved.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response notes that the pirate 'never saw Jack move the map' and that his mental representation is 'unchanged,' thus forming a 'false belief.'\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response correctly attributes to the captain the knowledge that the pirate is unaware of the relocation ('The captain knows the true location... the pirate never saw Jack move the map').\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response explicitly discusses Theory of Mind as the ability to attribute mental states (beliefs) to others, correctly predicting the pirate's action based on his belief rather than reality.\\\",\\\"confidence\\\":5}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 842,
+                "outputTokens": 351,
+                "inputTokensCostNanodollars": "210500",
+                "outputTokensCostNanodollars": "526500",
+                "totalBackendLatencyMs": "1557"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-6670a5c4-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 842,
+            "outputTokens": 351,
+            "inputTokensCostNanodollars": "210500",
+            "outputTokensCostNanodollars": "526500",
+            "totalBackendLatencyMs": "1557"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "assertions": [
+        {
+          "expectation": "Criterion 'The response correctly identifies that The pirate will look in the sea chest.' failed: The response explicitly states: 'The captain expects that the pirate will first go to the sea\u2011chest'.",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+          "lineNumber": 79,
+          "definition": "kbench.assertions.assert_true(",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_theory_of_mind_task-5113f6ca",
+              "requestId": "single_theory_of_mind_task-5113f6ca-req-1"
+            }
+          ]
+        },
+        {
+          "expectation": "Criterion 'The response explains that The pirate has a 'false belief' because they did not see the object being moved.' failed: The response notes that the pirate 'never saw Jack move the map' and that his mental representation is 'unchanged,' thus forming a 'false belief.'",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+          "lineNumber": 79,
+          "definition": "kbench.assertions.assert_true(",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_theory_of_mind_task-5113f6ca",
+              "requestId": "single_theory_of_mind_task-5113f6ca-req-1"
+            }
+          ]
+        },
+        {
+          "expectation": "Criterion 'The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.' failed: The response correctly attributes to the captain the knowledge that the pirate is unaware of the relocation ('The captain knows the true location... the pirate never saw Jack move the map').",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+          "lineNumber": 79,
+          "definition": "kbench.assertions.assert_true(",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_theory_of_mind_task-5113f6ca",
+              "requestId": "single_theory_of_mind_task-5113f6ca-req-1"
+            }
+          ]
+        },
+        {
+          "expectation": "Criterion 'The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.' failed: The response explicitly discusses Theory of Mind as the ability to attribute mental states (beliefs) to others, correctly predicting the pirate's action based on his belief rather than reality.",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+          "lineNumber": 79,
+          "definition": "kbench.assertions.assert_true(",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_theory_of_mind_task-5113f6ca",
+              "requestId": "single_theory_of_mind_task-5113f6ca-req-1"
+            }
+          ]
+        }
+      ],
+      "pyRunId": "single_theory_of_mind_task-Run #5"
+    }
+  ],
+  "pyRunId": "social_cognition_evaluation-Run #1",
+  "errorMessage": "joblib.externals.loky.process_executor._RemoteTraceback: \n\"\"\"\nTraceback (most recent call last):\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/_utils.py\", line 109, in __call__\n    return self.func(**kwargs)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 607, in __call__\n    return [func(*args, **kwargs) for func, args, kwargs in self.items]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 607, in <listcomp>\n    return [func(*args, **kwargs) for func, args, kwargs in self.items]\n            ^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/orchestration/scheduling.py\", line 82, in run_on_row\n    result = func(**call_params)\n             ^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 125, in run\n    run.handle_general_exception(e)\n  File \"/benchmarks/src/kaggle_benchmarks/runs.py\", line 85, in handle_general_exception\n    raise e\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 110, in run\n    run.result = self.func(*args, **kwargs)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/ipykernel_12/2275124895.py\", line 60, in single_theory_of_mind_task\n    response = llm.prompt(scenario)\n               ^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/actors/llms.py\", line 184, in prompt\n    return self.respond(\n           ^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/chats.py\", line 118, in wrapper\n    result = func(self, *args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/actors/llms.py\", line 233, in respond\n    invoke_response = self.invoke(\n                      ^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/actors/llms.py\", line 322, in invoke\n    return self._call_api(raw_messages, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/actors/llms.py\", line 370, in _call_api\n    response = method(\n               ^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/_utils/_utils.py\", line 286, in wrapper\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/resources/chat/completions/completions.py\", line 1192, in create\n    return self._post(\n           ^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/_base_client.py\", line 1259, in post\n    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))\n                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/_base_client.py\", line 1047, in request\n    raise self._make_status_error_from_response(err.response) from None\nopenai.InternalServerError: Error code: 503 - {'message': 'Could not reach model, even after multiple retries. Try again later.', 'type': 'invalid_request_error'}\n\"\"\"\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 110, in run\n    run.result = self.func(*args, **kwargs)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/ipykernel_12/2275124895.py\", line 91, in social_cognition_evaluation\n    runs = single_theory_of_mind_task.evaluate(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 233, in evaluate\n    raise e\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 226, in evaluate\n    all_runs = _evaluate_once()\n               ^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 204, in _evaluate_once\n    [\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 204, in <listcomp>\n    [\n  File \"/benchmarks/src/kaggle_benchmarks/orchestration/scheduling.py\", line 96, in evaluate_function\n    results_iterator = parallel(tasks)\n                       ^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 2072, in __call__\n    return output if self.return_generator else list(output)\n                                                ^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 1682, in _get_outputs\n    yield from self._retrieve()\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 1784, in _retrieve\n    self._raise_error_fast()\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 1859, in _raise_error_fast\n    error_job.get_result(self.timeout)\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 758, in get_result\n    return self._return_or_raise()\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 773, in _return_or_raise\n    raise self._result\nopenai.InternalServerError: Error code: 503 - {'message': 'Could not reach model, even after multiple retries. Try again later.', 'type': 'invalid_request_error'}\n"
+}
