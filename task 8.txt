@@ -1,0 +1,50 @@
+This task, **"find\_reversed\_word\_in\_noise,"** is a rigorous test of a model's **character-level perception** and **spatial reasoning**. It moves beyond standard semantic understanding to see if a model can perform granular string manipulation under "noisy" conditions.
+
+---
+
+## ## Task Description: The Reverse-String Challenge
+The core of this task is a "visual" linguistic puzzle. The model is forced to ignore distracting data to find a specific sequence that has been intentionally obfuscated.
+
+### 1. The Obfuscation Mechanism
+The code uses a helper function, `generate_noisy_data(word)`, to create the test environment. For each target word (e.g., "COMPUTER"), the task likely:
+1.  **Reverses the word** (e.g., "RETUPMOC").
+2.  **Embeds it into noise**, surrounding it with random characters, symbols, or repetitive sequences.
+3.  **Challenges the model** to locate the hidden sequence and re-reverse it back to its original form.
+
+### 2. High-Precision Evaluation
+The script tests 10 high-complexity words (like "FRAMEWORK" and "BENCHMARK"). It uses `n_jobs=2` to run parallel evaluations and calculates a final **accuracy score** based on the mean success across all ten attempts. A score of **1.00** indicates perfect extraction and reversal, while lower scores indicate failures in either finding the word or correctly processing the character sequence.
+
+---
+
+## ## Model Performance Analysis: The Tokenization Wall
+The results provide a fascinating look at how different models handle "sub-token" tasks—tasks where the model cannot rely on whole-word recognition.
+
+### The Perfect Performers (Score: 1.00)
+A large group of models, including **DeepSeek-R1, Gemini 2.5 Pro,** and **Claude Opus 4.6**, achieved a perfect score. 
+* **Overcoming Tokenization:** Most LLMs process text in "tokens" (chunks of characters). Reversing a word is hard because "COMPUTER" is one token, but "RETUPMOC" is a mess of unrelated character tokens. 
+* **The "Reasoning" Edge:** **DeepSeek-R1** succeeded here (unlike in previous logic tests), likely because its "Chain of Thought" allows it to explicitly list out characters one by one to verify the reversal.
+
+### The "Close but Not Quite" Tier (Score: 0.90)
+**GPT-5.4** and **Qwen 3 Next 80B Thinking** both scored 0.90.
+* **The One-Character Slip:** A 0.90 usually means the model failed on exactly one word out of the ten. This often happens with longer words where the model's internal "attention" slips by a single character (e.g., reversing "BENCHMARK" but missing the 'H'). It shows that even "frontier" models still occasionally struggle with perfect character-level accuracy.
+
+### The "Failure" Tier: Gemma 3 12B (Score: 0.10)
+**Gemma 3 12B** failed significantly, getting only 1 out of 10 correct.
+* **Model Size Constraints:** Smaller models often lack the "high-resolution" attention required to look at individual characters within a noisy string. They tend to "hallucinate" what they think the word should be based on the noise rather than performing the mechanical task of reversal.
+
+### The Error: gpt-oss-120b
+As seen in previous tasks, **gpt-oss-120b** triggered an "Error." This consistently suggests an API incompatibility or a failure to output the results in the specific format required by the `find_reversed_word_single` evaluator.
+
+---
+
+## ## Summary of Evaluation Criteria
+
+| Component | Goal | Difficulty |
+| :--- | :--- | :--- |
+| **Noise Filtering** | Ignore random chars | High |
+| **Spatial Mapping** | Identify reversed sequence | Medium |
+| **String Manipulation** | Correctly re-reverse the word | High (for Tokenizers) |
+
+
+
+> **The Takeaway:** This task demonstrates that **DeepSeek-R1** and the **Gemini 2.5/3** families have become exceptionally good at "mechanical" string tasks that historically crippled LLMs. However, the 0.90 score for **GPT-5.4** reminds us that even the most powerful models are not yet 100% reliable when it comes to the "vision-like" task of reading noise.
