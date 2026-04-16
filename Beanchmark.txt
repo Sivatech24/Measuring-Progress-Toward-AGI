@@ -1,0 +1,43 @@
+This comprehensive writeup summarizes the series of **KBench (Kernel Benchmark)** tasks executed during this session. The evaluations were designed to push the boundaries of Large Language Model (LLM) performance across five core cognitive domains: **Retrieval, Logic/Reasoning, Social Cognition, Executive Function,** and **Metacognition.**
+
+---
+
+## 1. Retrieval & Attention: The "Needle in a Haystack"
+These tests evaluated the models' ability to isolate specific data points within massive volumes of noise.
+* **Tasks:** Finding a project codename in repetitive prose and extracting non-numeric strings from dense CSV structures.
+* **Key Findings:** While most models showed perfect retrieval in prose, structured data (CSV) proved more challenging. **GPT-5.4** and **Gemini 2.5 Pro** remained perfect, but **DeepSeek-R1** struggled significantly with CSV extraction, suggesting that "reasoning" models can sometimes over-analyze simple structural data.
+
+## 2. Symbolic & In-Context Logic
+These tasks required models to adopt entirely new, fictional logical systems provided within a single prompt.
+* **Tasks:** The **"Prime-Swap"** system (replacing prime/even numbers with specific words) and **"Reverse Logic Arithmetic"** (where `+` is subtraction and `-` is multiplication).
+* **Key Findings:** Most models exhibited high "plasticity," successfully overriding their training. However, **DeepSeek-R1** showed a "habituation trap," where its strong internal training in standard mathematics occasionally overrode the fictional rules it was instructed to follow.
+
+## 3. Social Cognition & Theory of Mind (ToM)
+These benchmarks measured the AI’s "Social IQ" its ability to track the conflicting beliefs and intentions of multiple characters.
+* **Tasks:** Standard false-belief tests and multi-scenario recursive reasoning (e.g., "A knows that B thinks C is lying").
+* **Key Findings:** Basic social reasoning is now a "solved" baseline. However, in **Multi-Scenario** tests, a performance gap emerged: **Gemini 2.5/3** and **Claude Opus 4.6** maintained perfect scores, while **GPT-5.4** and **DeepSeek-R1** dropped to 67% accuracy, struggling with complex, nested social perspectives.
+
+## 4. Executive Function & Constraint Adherence
+This domain tested "System 2" thinking the ability to follow multi-step plans and suppress impulsive responses.
+* **Tasks:** Solving logic puzzles, following "no-go" constraints (Inhibition), and executing meteorological decision trees with strict priority levels.
+* **Key Findings:** This was the most difficult domain. In the **Inhibition Benchmark**, nearly every model (including Claude and Gemini) failed with a **0.00 score**, proving that LLMs still struggle to fight their own probabilistic weights. However, they were excellent at **Conditional Planning**, with **Deepseek V3.1** and **Qwen 3** showing perfect algorithmic follow-through.
+
+## 5. Metacognition & Self-Awareness
+These tasks measured the "wisdom" of the AI knowing when it doesn't know an answer or when the data provided is corrupted.
+* **Tasks:** Detecting "Unknowable" facts (e.g., Cervantes' breakfast) and flagging corrupted datasets.
+* **Key Findings:** **Qwen 3 Next Thinking** was the standout leader in data integrity detection. In "Self-Awareness," **GPT-5.4** led the pack (0.78), showing a higher willingness to admit ignorance compared to **DeepSeek-R1**, which often attempted to "reason" its way into a hallucination.
+
+---
+
+## Final Performance Summary Table
+
+| Domain | Top Performers | Common Failure Mode |
+| :--- | :--- | :--- |
+| **Attention** | Gemini 3 Flash, GPT-5.4, Claude 4.6 | "Middle-loss" in structured CSV data. |
+| **Logic** | GLM-5, Gemini 2.5 Pro, Claude 4.5 | Habitual interference (falling back on standard math). |
+| **Social** | Claude 4.6, Gemini 2.5 Pro, Qwen 3 | Difficulty with recursive "thinking about thinking." |
+| **Executive** | Qwen 3 Thinking, Deepseek V3.1 | Failure to inhibit high-probability responses. |
+| **Metacognition** | Qwen 3 Thinking, GPT-5.4 | Over-helpfulness (answering the unknowable). |
+
+### Overall Conclusion
+The benchmark results reveal a shifting landscape. While **GPT-5.4** and **Claude Opus 4.6** remain the most balanced "all-rounders," **Gemini 2.5/3** has become the leader in social reliability. **Qwen** and **DeepSeek** have mastered algorithmic logic but still struggle with the "human" nuances of metacognition and social perspective taking. The biggest hurdle remains **Inhibition**: models still find it almost impossible to *not* do what they are most frequently trained to do.
