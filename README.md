@@ -94,6 +94,11 @@ Our testing across 14 frontier models yielded a clear gradient of performance:
 * **Reasoning vs. Memory:** While **DeepSeek** performed admirably in logical reasoning, larger-parameter models (Qwen 3) demonstrated superior "fluidity" in adjusting plans when intermediate steps were intentionally failed (Executive Function track).
 * **Conclusion:** The results prove that size doesn't always equal adaptability. Our benchmark successfully reveals that even the most "knowledgeable" models still struggle with inhibition and rapid rule-switching.
 
+<img width="961" height="294" alt="www kaggle com_benchmarks_codingmaster24_measuring-progress-toward-agi_leaderboard (1)" src="https://github.com/user-attachments/assets/fb44205e-25d6-4f82-aeb0-2e5db88a01f0" />
+
+<img width="1434" height="768" alt="www kaggle com_benchmarks_codingmaster24_measuring-progress-toward-agi_leaderboard" src="https://github.com/user-attachments/assets/47f1bed7-ebab-4f04-ac47-661fe9ab1bd6" />
+
+
 # Evaluation protocol
  Model runs: We evaluated a collection of baseline models spanning closedsource APIs and open LLM checkpoints. For each model we ran the same prompt templates and randomized fewshot examples where applicable.
  Multiple seeds: Each evaluation uses multiple RNG seeds to reduce variance due to example selection
