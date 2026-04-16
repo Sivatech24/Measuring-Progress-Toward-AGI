@@ -1,14 +1,21 @@
-Project Name
-Measuring Progress Toward AGI Benchmark Suite
+# Project Name
+## Measuring Progress Toward AGI Benchmark Suite
 
-Your Team
-Sivatech24 (primary author)
+# Your Team
+## Sivatech24 (primary author)
 
-Problem Statement
+# Problem Statement
 Contemporary large AI models often obtain high scores on benchmarks by exploiting memorized patterns and familiar training data, rather than demonstrating fluid, generalizable cognitive abilities. This work presents a set of evaluation tasks assembled as a Kaggle Benchmark that isolate cognitive faculties highlighted in Google DeepMind’s “Measuring progress toward AGI: A cognitive framework”: Learning, Metacognition, Attention, Executive Functions, and Social Cognition. Our central question: What specific, reliable signals of fluid cognitive ability can these tasks reveal that standard benchmarks miss?
 
 Why this matters
-Current performance metrics frequently conflate crystallized knowledge with adaptive reasoning. Benchmarks that produce fine-grained cognitive profiles reveal how models learn, when they fail, and whether those failures are systematic or random. This benchmark aims to (1) probe learning-on-the-fly, (2) measure a model’s self-monitoring, (3) detect susceptibility to irrelevant context, (4) test planning, inhibition and working memory, and (5) evaluate social reasoning across multi-agent scenarios. The resulting discriminatory power helps distinguish superficially high-performing models from genuinely adaptive ones.
+Current performance metrics frequently conflate crystallized knowledge with adaptive reasoning. Benchmarks that produce fine-grained cognitive profiles reveal how models learn, when they fail, and whether those failures are systematic or random. This benchmark aims to 
+
+### (1) probe learning-on-the-fly 
+### (2) measure a model’s self-monitoring 
+### (3) detect susceptibility to irrelevant context 
+### (4) test planning, inhibition and working memory 
+### (5) evaluate social reasoning across multi-agent scenarios 
+The resulting discriminatory power helps distinguish superficially high-performing models from genuinely adaptive ones.
 
 Kaggle Benchmark link
 https://www.kaggle.com/benchmarks/codingmaster24/measuring-progress-toward-agi/leaderboard
