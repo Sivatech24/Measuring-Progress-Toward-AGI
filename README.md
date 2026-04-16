@@ -126,8 +126,8 @@ This project was developed independently by **Sivatech24**, a Computer Science a
 * **GitHub Repository:** [Measuring-Progress-Toward-AGI](https://github.com/Sivatech24/Measuring-Progress-Toward-AGI.git)
 * **Framework Inspiration:** DeepMind: *Measuring progress toward AGI: A cognitive framework* (2026).
 * **Reference Data:** * [Norway Meteorological Data](https://www.kaggle.com/datasets/annbengardt/noway-meteorological-data)
-  * [YouTube 8M Dataset](https://www.kaggle.com/datasets/codingmaster24/yt8m-dataset)
-  * [NREL Solar Power Data](https://www.kaggle.com/datasets/codingmaster24/nrel-solar-power-data-partitioned-data)
+* [YouTube 8M Dataset](https://www.kaggle.com/datasets/codingmaster24/yt8m-dataset)
+* [NREL Solar Power Data](https://www.kaggle.com/datasets/codingmaster24/nrel-solar-power-data-partitioned-data)
     * [Solar Radiation Dataset](https://www.kaggle.com/datasets/ibrahimkiziloklu/solar-radiation-dataset)
     * [Global Ecological Footprint 2023](https://www.kaggle.com/datasets/jainaru/global-ecological-footprint-2023)
 
