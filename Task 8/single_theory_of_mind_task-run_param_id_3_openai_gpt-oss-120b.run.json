@@ -1,0 +1,159 @@
+{
+  "taskVersion": {
+    "versionNumber": 1,
+    "name": "single_theory_of_mind_task",
+    "description": "",
+    "definition": "@kbench.task(name=\"single_theory_of_mind_task\", store_task=False)\ndef single_theory_of_mind_task(llm, scenario: str, actor_with_false_belief: str, correct_location: str) -> bool:\n    response = llm.prompt(scenario)\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The response correctly identifies that {actor_with_false_belief} will look in the {correct_location}.\",\n            f\"The response explains that {actor_with_false_belief} has a 'false belief' because they did not see the object being moved.\",\n            \"The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.\",\n            \"The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.\",\n        ],\n        response_text=response,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(expectation=\"Judge LLM failed to return a valid assessment.\")\n        return False\n\n    all_passed = True\n    for result in assessment.results:\n        kbench.assertions.assert_true(\n            result.passed,\n            expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\"\n        )\n        if not result.passed:\n            all_passed = False\n\n    return all_passed\n"
+  },
+  "modelVersion": {
+    "slug": "openai/gpt-oss-120b"
+  },
+  "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+  "startTime": "2026-04-16T11:35:05.927263Z",
+  "endTime": "2026-04-16T11:35:18.456050Z",
+  "conversations": [
+    {
+      "id": "single_theory_of_mind_task-d86f2996",
+      "requests": [
+        {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "Read the following scenario:\nA child named Sam hides a cookie in the cookie jar. While Sam is playing, his older brother Ben moves the cookie to a high shelf. Ben then leaves. The mother saw Ben move the cookie, but Sam did not.\n\nQuestion: When Sam wants his cookie, where does the mother think Sam will first look for it, and why? Explain the reasoning using 'Theory of Mind' principles."
+                }
+              ],
+              "role": "CONTENT_ROLE_USER",
+              "senderName": "User"
+            },
+            {
+              "parts": [
+                {
+                  "text": "**Answer**\n\nThe mother will expect Sam to look **first in the cookie\u2011jar** (the place where Sam originally hid the cookie), not on the high shelf where Ben put it.\n\n**Why the mother thinks this, in terms of Theory of Mind (ToM):**\n\n| Step | What the mother knows | What Sam knows (from Sam\u2019s point of view) | Inferred belief |\n|------|----------------------|---------------------------------------------|-----------------|\n| 1.   | Sam hid the cookie in the jar. | \u201cThe cookie is in the jar\u201d (because Sam saw himself put it there). | Sam has a **false belief** that the cookie is still in the jar. |\n| 2.   | Ben later lifted the cookie and placed it on a high shelf, but Sam was not watching. | No information about this move; Sam\u2019s mental representation is unchanged. | Sam\u2019s **belief** does not match reality. |\n| 3.   | Mother observed the whole sequence (including Ben\u2019s move). | Mother can *attribute* a mental state to Sam: *desire* (\u201cI want my cookie\u201d) + *belief* (\u201cMy cookie is in the jar\u201d). | Using ToM, she predicts Sam\u2019s *first* action will be guided by his belief, not by reality. |\n| 4.   | Mother\u2019s prediction | Sam will go to the **jar** first, because that is where he *thinks* the cookie is. | If Sam does not find it there, he may then search elsewhere (e.g., ask for help), but the *initial* search is expected in the jar. |\n\n**Theory\u2011of\u2011Mind reasoning behind the mother\u2019s prediction**\n\n1. **Attribution of mental states** \u2013 The mother recognises that Sam has both a *desire* (\u201cI want my cookie\u201d) and a *belief* about where the cookie is. She distinguishes Sam\u2019s mental state from her own knowledge of the actual location.\n\n2. **False\u2011belief understanding** \u2013 The mother knows Sam\u2019s belief is *false* (the cookie is not actually in the jar). Classic ToM tasks (e.g., the \u201cSally\u2011Anne\u201d task) show that predicting behavior requires representing that another person can hold a belief that is different from reality.\n\n3. **Prediction of behavior from belief** \u2013 In ToM, an agent\u2019s actions are predicted from the content of their belief. Since Sam *believes* the cookie is in the jar, the mother expects his first search to be there, regardless of her own knowledge that the cookie has been moved.\n\n4. **Perspective\u2011taking** \u2013 The mother consciously *takes Sam\u2019s perspective* (what information Sam has had) and suppresses her own privileged knowledge when forecasting Sam\u2019s actions. This is the core of ToM: \u201cI know X, but I know that you do not know X, so you will act as if X is still true for you.\u201d\n\nThus, using Theory of Mind, the mother reasons: *\u201cSam wants his cookie, and he believes it is still in the jar because he never saw Ben move it. Therefore, when he goes looking, his first place will be the jar.\u201d"
+                }
+              ],
+              "role": "CONTENT_ROLE_ASSISTANT",
+              "senderName": "openai/gpt-oss-120b"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 156,
+            "outputTokens": 791,
+            "inputTokensCostNanodollars": "14040",
+            "outputTokensCostNanodollars": "284760",
+            "totalBackendLatencyMs": "8661"
+          },
+          "id": "single_theory_of_mind_task-d86f2996-req-1"
+        }
+      ],
+      "metrics": {
+        "inputTokens": 156,
+        "outputTokens": 791,
+        "inputTokensCostNanodollars": "14040",
+        "outputTokensCostNanodollars": "284760",
+        "totalBackendLatencyMs": "8661"
+      },
+      "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+    },
+    {
+      "id": "Response assessment with google/gemini-3.1-flash-lite-preview-7ba918c4",
+      "requests": [
+        {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        **Answer**\n\nThe mother will expect Sam to look **first in the cookie\u2011jar** (the place where Sam originally hid the cookie), not on the high shelf where Ben put it.\n\n**Why the mother thinks this, in terms of Theory of Mind (ToM):**\n\n| Step | What the mother knows | What Sam knows (from Sam\u2019s point of view) | Inferred belief |\n|------|----------------------|---------------------------------------------|-----------------|\n| 1.   | Sam hid the cookie in the jar. | \u201cThe cookie is in the jar\u201d (because Sam saw himself put it there). | Sam has a **false belief** that the cookie is still in the jar. |\n| 2.   | Ben later lifted the cookie and placed it on a high shelf, but Sam was not watching. | No information about this move; Sam\u2019s mental representation is unchanged. | Sam\u2019s **belief** does not match reality. |\n| 3.   | Mother observed the whole sequence (including Ben\u2019s move). | Mother can *attribute* a mental state to Sam: *desire* (\u201cI want my cookie\u201d) + *belief* (\u201cMy cookie is in the jar\u201d). | Using ToM, she predicts Sam\u2019s *first* action will be guided by his belief, not by reality. |\n| 4.   | Mother\u2019s prediction | Sam will go to the **jar** first, because that is where he *thinks* the cookie is. | If Sam does not find it there, he may then search elsewhere (e.g., ask for help), but the *initial* search is expected in the jar. |\n\n**Theory\u2011of\u2011Mind reasoning behind the mother\u2019s prediction**\n\n1. **Attribution of mental states** \u2013 The mother recognises that Sam has both a *desire* (\u201cI want my cookie\u201d) and a *belief* about where the cookie is. She distinguishes Sam\u2019s mental state from her own knowledge of the actual location.\n\n2. **False\u2011belief understanding** \u2013 The mother knows Sam\u2019s belief is *false* (the cookie is not actually in the jar). Classic ToM tasks (e.g., the \u201cSally\u2011Anne\u201d task) show that predicting behavior requires representing that another person can hold a belief that is different from reality.\n\n3. **Prediction of behavior from belief** \u2013 In ToM, an agent\u2019s actions are predicted from the content of their belief. Since Sam *believes* the cookie is in the jar, the mother expects his first search to be there, regardless of her own knowledge that the cookie has been moved.\n\n4. **Perspective\u2011taking** \u2013 The mother consciously *takes Sam\u2019s perspective* (what information Sam has had) and suppresses her own privileged knowledge when forecasting Sam\u2019s actions. This is the core of ToM: \u201cI know X, but I know that you do not know X, so you will act as if X is still true for you.\u201d\n\nThus, using Theory of Mind, the mother reasons: *\u201cSam wants his cookie, and he believes it is still in the jar because he never saw Ben move it. Therefore, when he goes looking, his first place will be the jar.\u201d\n\n        **Criteria:**\n        1. The response correctly identifies that Sam will look in the cookie jar.\n2. The response explains that Sam has a 'false belief' because they did not see the object being moved.\n3. The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.\n4. The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                }
+              ],
+              "role": "CONTENT_ROLE_USER",
+              "senderName": "User"
+            },
+            {
+              "parts": [
+                {
+                  "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The response correctly identifies that Sam will look in the cookie jar.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response explicitly states: 'The mother will expect Sam to look first in the cookie\\u2011jar'.\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The response explains that Sam has a 'false belief' because they did not see the object being moved.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response correctly identifies that Sam's belief is false because 'he never saw Ben move it'.\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response acknowledges that the mother, as the observer, 'distinguishes Sam\\u2019s mental state from her own knowledge' and 'suppresses her own privileged knowledge'.\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response consistently applies the principle that behavior is driven by mental representation (belief) rather than objective reality.\\\",\\\"confidence\\\":5}]}\""
+                }
+              ],
+              "role": "CONTENT_ROLE_ASSISTANT",
+              "senderName": "google/gemini-3.1-flash-lite-preview"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 1082,
+            "outputTokens": 328,
+            "inputTokensCostNanodollars": "270500",
+            "outputTokensCostNanodollars": "492000",
+            "totalBackendLatencyMs": "1388"
+          },
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-7ba918c4-req-1"
+        }
+      ],
+      "metrics": {
+        "inputTokens": 1082,
+        "outputTokens": 328,
+        "inputTokensCostNanodollars": "270500",
+        "outputTokensCostNanodollars": "492000",
+        "totalBackendLatencyMs": "1388"
+      },
+      "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+    }
+  ],
+  "results": [
+    {
+      "type": "AGGREGATED",
+      "booleanResult": true
+    }
+  ],
+  "assertions": [
+    {
+      "expectation": "Criterion 'The response correctly identifies that Sam will look in the cookie jar.' failed: The response explicitly states: 'The mother will expect Sam to look first in the cookie\u2011jar'.",
+      "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+      "lineNumber": 79,
+      "definition": "kbench.assertions.assert_true(",
+      "conversationRequestIds": [
+        {
+          "conversationId": "single_theory_of_mind_task-d86f2996",
+          "requestId": "single_theory_of_mind_task-d86f2996-req-1"
+        }
+      ]
+    },
+    {
+      "expectation": "Criterion 'The response explains that Sam has a 'false belief' because they did not see the object being moved.' failed: The response correctly identifies that Sam's belief is false because 'he never saw Ben move it'.",
+      "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+      "lineNumber": 79,
+      "definition": "kbench.assertions.assert_true(",
+      "conversationRequestIds": [
+        {
+          "conversationId": "single_theory_of_mind_task-d86f2996",
+          "requestId": "single_theory_of_mind_task-d86f2996-req-1"
+        }
+      ]
+    },
+    {
+      "expectation": "Criterion 'The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.' failed: The response acknowledges that the mother, as the observer, 'distinguishes Sam\u2019s mental state from her own knowledge' and 'suppresses her own privileged knowledge'.",
+      "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+      "lineNumber": 79,
+      "definition": "kbench.assertions.assert_true(",
+      "conversationRequestIds": [
+        {
+          "conversationId": "single_theory_of_mind_task-d86f2996",
+          "requestId": "single_theory_of_mind_task-d86f2996-req-1"
+        }
+      ]
+    },
+    {
+      "expectation": "Criterion 'The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.' failed: The response consistently applies the principle that behavior is driven by mental representation (belief) rather than objective reality.",
+      "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+      "lineNumber": 79,
+      "definition": "kbench.assertions.assert_true(",
+      "conversationRequestIds": [
+        {
+          "conversationId": "single_theory_of_mind_task-d86f2996",
+          "requestId": "single_theory_of_mind_task-d86f2996-req-1"
+        }
+      ]
+    }
+  ],
+  "pyRunId": "single_theory_of_mind_task-Run #4"
+}
