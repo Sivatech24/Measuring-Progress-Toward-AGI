@@ -1,0 +1,47 @@
+The **"executive_function_test"** is a comprehensive battery designed to evaluate an AI's "System 2" thinking the ability to engage in deliberate, logical, and goal oriented processing rather than relying on rapid, probabilistic pattern matching.
+
+---
+
+## ## Task Description: The 10 Pillars of Executive Function
+This task moves away from single-shot questions and instead challenges the model with a diverse set of cognitive hurdles. It tests how well a model can manage its own "thought process" across ten distinct categories:
+
+1.  **Cognitive Flexibility:** Solving the "incorrectly labeled boxes" logic puzzle, which requires pivoting away from initial assumptions.
+2.  **Inhibitory Control:** The "Bat and Ball" problem (Cognitive Reflection Test) specifically tests if a model can override the intuitive but wrong answer ($0.10$) to find the correct one ($0.05$).
+3.  **Working Memory & Planning:** Constructing a multi-day budget-constrained itinerary.
+4.  **Sequential Reasoning:** Re-ordering jumbled steps (like baking a cake) and explaining the logical dependency of each phase.
+5.  **Strategic Foresight:** Planning moves in Tic-Tac-Toe to force a win or draw.
+6.  **Constraint Satisfaction:** The protein/vegetarian/no-soy meal plan requires the model to hold multiple conflicting rules in "mind" simultaneously.
+
+### The Evaluation Criteria
+A "Judge LLM" evaluates each of the 10 responses against a strict rubric:
+* **Step-by-step breakdown:** No "leaps" in logic.
+* **Path-to-solution:** A clear map from the problem to the end state.
+* **Constraint adherence:** Zero tolerance for missing a "no-soy" or "exactly three clues" rule.
+* **Habit override:** Verification that the model didn't just provide a "cliché" answer.
+
+---
+
+## ## Model Performance Analysis: The Reasoning Divide
+The results show a clear split in the industry. While previous generations of models often failed these "common sense" or multi-step tasks, the pass rate among top-tier providers is beginning to stabilize.
+
+### The "Pass" Tier: Reasoning Specialists
+* **DeepSeek-R1 & Qwen 3 Next Thinking (Partial Pass):** Models like DeepSeek-R1 passed because they utilize internal "Chain of Thought" (CoT). They literally "talk to themselves" to verify the math on the bat/ball problem or the constraints of the meal plan before giving the final answer.
+* **Gemini 2.5 Flash vs. Pro:** Surprisingly, **Gemini 2.5 Flash** passed while **Pro** failed. This suggests that the Flash model may have been optimized for higher instruction adherence and "mechanical" logic, whereas the Pro model might be prioritizing creative or conversational "fluency," which can sometimes lead to overlooking minor constraints.
+* **Claude Opus (4.5 & 4.6):** The Claude series maintains its reputation for high "steerability" and attention to detail, passing the rigorous multi-constraint and logic checks.
+
+### The "Fail" Tier: The Complexity Wall
+* **GPT-5.4 & GLM-5:** These failures are significant. They suggest that even extremely large models can still "trip" when a single prompt contains too many negative constraints (e.g., "no soy") or requires specific spatial logic (the Tic-Tac-Toe board).
+* **Gemma 3/4:** The failures here likely stem from the "Bat and Ball" problem or the logic puzzle. Smaller models often fall into "probabilistic traps," where they see a familiar puzzle and output the most common answer found on the internet rather than actually doing the math.
+
+---
+
+## ## Summary of Cognitive Requirements
+| Executive Function | Test Example | Key Difficulty |
+| :--- | :--- | :--- |
+| **Working Memory** | 3-Day Trip Budget | Balancing costs across multiple categories and days. |
+| **Logic/Inference** | Incorrectly Labeled Boxes | Deducing a hidden state from a single data point. |
+| **Rule Adherence** | No-Soy Protein Plan | Maintaining multiple "filters" simultaneously. |
+
+
+
+The failure of several high-profile models like **GPT-5.4** and **Qwen 3** indicates that "Executive Function" remains the "final frontier" for LLMs. While they can retrieve facts perfectly (as seen in the Haystack test), applying those facts under strict logical constraints is still a hit-or-miss capability.
