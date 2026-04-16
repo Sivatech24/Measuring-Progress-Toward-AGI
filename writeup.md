@@ -1,7 +1,7 @@
 # Project Name
 ## Measuring Progress Toward AGI Benchmark Suite
 
-# Your Team
+# Break It Down
 ## Sivatech24 (primary author)
 
 # Problem Statement
