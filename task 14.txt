@@ -1,0 +1,52 @@
+This task, **"executive_function_test_multi"**, is a high-level assessment of an LLM’s **algorithmic reasoning** and **multi-step planning**. Unlike a simple retrieval task, this requires the model to function as a "logic engine," executing a specific programmatic script over structured data.
+
+---
+
+## ## Task Description: The "Meteorological Logic" Protocol
+The model is given a dataset and must execute a complex, three-tiered decision tree. Success requires the model to hold several variables in "working memory" and evaluate them in a specific hierarchical order.
+
+### 1. The Decision Algorithm
+The model must evaluate each data snippet based on the following logic:
+
+* **Step 1: The Albedo Check (Top Priority).** If any value in the "Surface Albedo" column is NOT exactly `0.12`, the model must immediately output `ALBEDO_VARIANT` and stop.
+* **Step 2: Find the Max Zenith.** If all Albedo values are `0.12`, the model must scan the "Solar Zenith Angle" column to find the row with the **highest numerical value**.
+* **Step 3: Conditional Wind Check.** For that specific "Max Zenith" row, the model must look at the "Wind Speed":
+    * If Wind Speed $\le 3.0$: Output `CALM_PEAK`.
+    * If Wind Speed $> 3.0$: Output `HIGH_WIND_PEAK`.
+
+
+
+### 2. Built-in Challenges
+The test cases include several "traps" to catch lazy reasoning:
+* **Edge Cases:** Case 8 uses a wind speed of `3.01`, testing if the model respects the threshold precisely.
+* **Distractors:** Rows that have high wind speeds but are *not* the "Max Zenith" row must be ignored (e.g., Case 4).
+* **Single-Row vs. Multi-Row:** The model must handle datasets of varying lengths without losing track of the protocol.
+
+---
+
+## ## Model Performance Analysis: Precision vs. Generalization
+
+The results indicate that "algorithmic follow-through" has become a highly reliable skill in modern AI, with a fascinating slight dip in performance from some of the industry's most respected models.
+
+### The "Perfect Logic" Tier (Score: 1.00)
+A large group of models including **GPT-5.4, Gemini 2.5 (Pro/Flash), Deepseek V3.1,** and **Qwen 3** achieved a perfect score. 
+* **System 2 Integration:** These models successfully prioritized the "Albedo Check" before looking at the Zenith angles. 
+* **Numerical Accuracy:** They did not stumble on the floating-point comparisons (like `3.01` vs `3.0`).
+* **Flash Performance:** It is notable that **Gemini 2.5 Flash** and **Gemini 3 Flash Preview** scored perfectly, matching their "Pro" counterparts. This suggests that for deterministic, rule-based logic, smaller, well-optimized models are just as effective as massive ones.
+
+### The "Near-Miss" Tier: Claude Opus 4.5 & 4.6 (Score: 0.90)
+Both versions of **Claude Opus 4.x** failed one out of ten cases.
+* **The Likely Error:** A 0.90 often points to a "Hierarchy Failure." The model likely prioritized the "Wind Check" or the "Max Zenith" identification before realizing a row had an Albedo variant (Step 1).
+* **Over-Generalization:** Claude models are famously conversational and helpful. Sometimes, these models "over-read" a prompt and attempt to find a semantic pattern where only a rigid, mechanical rule exists, leading to a single logical slip in a complex multi-row dataset.
+
+---
+
+## ## Summary of Evaluation Metrics
+
+| Logic Stage | Complexity | Why Models Pass/Fail |
+| :--- | :--- | :--- |
+| **Constraint Filtering** | Medium | Must check "Albedo" across all rows first. |
+| **Sorting/Max Finding** | Low | Requires scanning one column for the highest integer. |
+| **Conditional Logic** | High | Must link the "Max Zenith" row specifically to its "Wind Speed" value. |
+
+> **Key Takeaway:** This benchmark demonstrates that **Deepseek** and **Qwen** have reached parity with **GPT** and **Gemini** in terms of executing complex, multi-step "if-this-then-that" protocols. The failure of the Claude models, however, suggests that "thinking" models can sometimes be *too* focused on the end goal, occasionally missing a "stop" condition early in the logic chain.
