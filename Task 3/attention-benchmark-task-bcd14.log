@@ -1,0 +1,11 @@
+[{"stream_name":"stderr","time":26.723456161,"data":"/benchmarks/.venv/lib/python3.11/site-packages/traitlets/traitlets.py:2930: FutureWarning: --Exporter.preprocessors=[\"remove_papermill_header.RemovePapermillHeader\"] for containers is deprecated in traitlets 5.0. You can pass `--Exporter.preprocessors item` ... multiple times to add items to a list.\n"}
+,{"stream_name":"stderr","time":26.723594857,"data":"  warn(\n"}
+,{"stream_name":"stderr","time":26.752141612,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to notebook\n"}
+,{"stream_name":"stderr","time":27.254013937,"data":"[NbConvertApp] Writing 243040 bytes to __notebook__.ipynb\n"}
+,{"stream_name":"stderr","time":30.874527041,"data":"/benchmarks/.venv/lib/python3.11/site-packages/traitlets/traitlets.py:2930: FutureWarning: --Exporter.preprocessors=[\"nbconvert.preprocessors.ExtractOutputPreprocessor\"] for containers is deprecated in traitlets 5.0. You can pass `--Exporter.preprocessors item` ... multiple times to add items to a list.\n"}
+,{"stream_name":"stderr","time":30.874578608,"data":"  warn(\n"}
+,{"stream_name":"stderr","time":30.900519502,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to html\n"}
+,{"stream_name":"stderr","time":32.110122772,"data":"/benchmarks/.venv/share/jupyter/nbconvert/templates/base/display_priority.j2:32: UserWarning: Your element with mimetype(s) dict_keys([]) is not able to be represented.\n"}
+,{"stream_name":"stderr","time":32.110179215,"data":"  {%- elif type == 'text/vnd.mermaid' -%}\n"}
+,{"stream_name":"stderr","time":32.127401065,"data":"[NbConvertApp] Writing 464397 bytes to __results__.html\n"}
+]
