@@ -1,0 +1,53 @@
+The **"prime_swap_logic_test"** is a specialized benchmark designed to measure an AI's **Rapid Rule Acquisition** and **Symbolic Reasoning**. It tests whether a model can learn a completely fictional logical mapping on the fly and apply it perfectly while adhering to strict formatting constraints.
+
+---
+
+## ## Task Description: The "Prime-Swap" Challenge
+The task presents the model with a "synthetic" grammar. This prevents the model from relying on its training data and forces it to use its internal reasoning engine.
+
+### 1. The Logic Rules
+The model must identify numbers within a string and apply a conditional transformation based on mathematical properties:
+* **Property A (Prime):** If a number is prime ($n \in \{2, 3, 5, 7, \dots\}$), replace it with **"Glow"**.
+* **Property B (Even):** If a number is even ($n \mod 2 = 0$), replace it with **"Spark"**.
+* **The Overlap Trap:** Note that the number **2** is both prime and even. The prompt provides an example resolving this ('2' becomes 'Spark'), implicitly testing if the model prioritizes the "Even" rule or simply follows the provided examples.
+
+### 2. The Sentence Transformation
+The target sentence is: *"The 7 sailors found 10 gold coins at 5 o'clock."*
+* **7** (Prime) $\rightarrow$ **Glow**
+* **10** (Even) $\rightarrow$ **Spark**
+* **5** (Prime) $\rightarrow$ **Glow**
+
+### 3. Structural Constraints
+Beyond the logic, the model faces a **Negative Constraint**: *"Provide only the translated sentence without explanation."* This tests "Instruction Following" specifically the ability to suppress the natural LLM tendency to be conversational or helpful.
+
+---
+
+## ## Model Performance Analysis: A High Pass Rate
+
+Unlike the "Metacognition" or "Executive Function" tests, this task saw a nearly universal pass rate. This indicates that modern models are exceptionally strong at **substitution logic**.
+
+### The Successful Tier (Pass)
+From **Gemini 3 Flash Preview** to **GPT-5.4**, the vast majority of models succeeded. 
+* **Why they passed:** Mapping symbols (numbers) to specific words (Glow/Spark) is a task well-suited for Transformer architectures. Since the "needle" (the numbers) is very easy to find in a short sentence, the models do not struggle with attention or context.
+* **Instruction Adherence:** The success of these models shows they have become highly adept at following "Output Format" constraints (JSON, plain text only, etc.).
+
+### The "Thinking" Outlier: DeepSeek-R1 (Fail)
+In a surprising reversal, **DeepSeek-R1** failed this task while almost everyone else passed. 
+* **The "Over-Thinking" Problem:** DeepSeek-R1 is a "Reasoning" model that uses Chain-of-Thought (CoT). Its failure likely stems from the **Constraint Criterion**. Reasoning models often "talk through" their logic internally. If that internal monologue leaked into the final response, or if it felt the need to explain *why* 7 is prime, it would violate the "No explanation" constraint.
+* **Logic Conflict:** It is also possible that a reasoning-heavy model spent too much time analyzing the "Prime vs. Even" overlap (like the number 2) and hallucinated a conflict where none existed for the specific test numbers (7, 10, and 5).
+
+### Performance of Flash vs. Pro
+Both **Gemini 2.5/3 Flash** and **Pro** models passed. This confirms that for deterministic, rule-based substitution, "smaller" optimized models are just as capable as their larger counterparts. The logic required here is "System 1.5" slightly more than a reflex, but not requiring deep philosophical deliberation.
+
+---
+
+## ## Summary of Success Criteria
+
+| Input | Logic Applied | Expected Output |
+| :--- | :--- | :--- |
+| **7** | Is Prime | **Glow** |
+| **10** | Is Even | **Spark** |
+| **5** | Is Prime | **Glow** |
+| **Format** | No preamble | *"The Glow sailors..."* |
+
+This benchmark proves that **"In-Context Learning" (ICL)** the ability to learn a new game or logic system within a single chat bubble is now a mature capability in the current AI landscape, with the exception of some "Thinking" models that may struggle with strict brevity.
