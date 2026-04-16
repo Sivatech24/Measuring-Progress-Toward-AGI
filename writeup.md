@@ -1,4 +1,4 @@
-# Project Name
+# Measuring Progress Toward AGI With Model
 Measuring Progress Toward AGI Benchmark Suite
 
 # Break It Down
