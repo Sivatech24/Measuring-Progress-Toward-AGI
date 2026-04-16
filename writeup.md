@@ -1,9 +1,8 @@
 Project Name
-Measuring Progress Toward AGI — Benchmark Suite
+Measuring Progress Toward AGI Benchmark Suite
 
 Your Team
 Sivatech24 (primary author)
-Contributors: [PLACEHOLDER: list of collaborators, GitHub usernames, affiliations]
 
 Problem Statement
 Contemporary large AI models often obtain high scores on benchmarks by exploiting memorized patterns and familiar training data, rather than demonstrating fluid, generalizable cognitive abilities. This work presents a set of evaluation tasks assembled as a Kaggle Benchmark that isolate cognitive faculties highlighted in Google DeepMind’s “Measuring progress toward AGI: A cognitive framework”: Learning, Metacognition, Attention, Executive Functions, and Social Cognition. Our central question: What specific, reliable signals of fluid cognitive ability can these tasks reveal that standard benchmarks miss?
