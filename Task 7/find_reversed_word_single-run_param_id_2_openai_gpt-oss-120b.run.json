@@ -1,0 +1,54 @@
+{
+  "taskVersion": {
+    "versionNumber": 1,
+    "name": "find_reversed_word_single",
+    "description": "",
+    "definition": "@kbench.task(name=\"find_reversed_word_single\", store_task=False)\ndef find_reversed_word_single(llm, data_block: str, answer: str) -> bool:\n    prompt = f\"\"\"Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [{data_block}]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word.\"\"\"\n\n    response = llm.prompt(prompt)\n    return answer.lower() in response.lower()\n"
+  },
+  "modelVersion": {
+    "slug": "openai/gpt-oss-120b"
+  },
+  "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+  "startTime": "2026-04-16T11:27:04.505792Z",
+  "endTime": "2026-04-16T11:29:23.140042Z",
+  "conversations": [
+    {
+      "id": "find_reversed_word_single-baa974e4",
+      "requests": [
+        {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [2IT9n5Jf, 59Pwzrw, NhGVEX, wzot4Qv, Rk7fjIwy, nNpWBTN, u8p02HUc, 2nn2J, QVRJGT, Xo39HvQ, A8n6B4, SovVec, pyfWnYk, BAKqf7Q0, CpP3It5, Zt2ZKu, ZS9Pb, g8DsJBxb, ELGGAK, EmRbVEP, tYIrj, Hb6DES, pKsnXl, f0ZR7, yTggOW, WvnN8h9, sokCrNk, UnIQbXo9, FqVLQ, YQ4k3, 4K3upjc, Jcl83, nGdGz8t, jAlefuq, NZDwdFc, 3JmWZ9D, ZvO6wBD, 4uzDn, ByiD5R, 1V5YlJm, iWBt3ojD, J2YX5, mKsJGr, 7SQnP5, DLW8o, ZjAXodi, hfJFo, 2HHAgGgn, 2odyf33, rghM1]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word."
+                }
+              ],
+              "role": "CONTENT_ROLE_USER",
+              "senderName": "User"
+            },
+            {
+              "parts": [
+                {
+                  "text": " R n u n Q X"
+                }
+              ],
+              "role": "CONTENT_ROLE_ASSISTANT",
+              "senderName": "openai/gpt-oss-120b"
+            }
+          ],
+          "metrics": {},
+          "id": "find_reversed_word_single-baa974e4-req-1"
+        }
+      ],
+      "metrics": {},
+      "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+    }
+  ],
+  "results": [
+    {
+      "type": "AGGREGATED",
+      "booleanResult": false
+    }
+  ],
+  "pyRunId": "find_reversed_word_single-Run #3"
+}
