@@ -1,0 +1,44 @@
+This task, **"social_cognition_test,"** is a benchmark designed to assess a model’s **Theory of Mind (ToM)** the ability to understand that others have beliefs, desires, and intentions that may differ from the model's own knowledge or from reality. 
+
+---
+
+## ## Task Description: Consistency in Social Logic
+Unlike a one-off question, this task evaluates the **reliability and consistency** of social reasoning by running the same complex scenario multiple times.
+
+### 1. The Repeated Probe
+The code creates a dataframe containing 10 identical instances of a specialized social prompt (`PROMPT_TEMPLATE`). This template typically describes a "False-Belief" scenario (e.g., the Sally-Anne test), where a character is unaware of a change in their environment. By running the test 10 times, the benchmark ensures the model isn't just "getting lucky" but has a stable, repeatable understanding of the social logic involved.
+
+### 2. The Evaluation Mechanism
+* **`single_theory_of_mind_check`**: A granular evaluator that checks if the model correctly predicts a character's action based on that character's *limited* knowledge, rather than the model's *full* knowledge.
+* **Parallel Processing**: It uses `n_jobs=2` to execute the checks efficiently.
+* **Success Tally**: The function returns a tuple (e.g., 10, 10), where the first integer is the number of successful reasoning passes and the second is the total number of attempts.
+
+
+
+---
+
+## ## Model Performance Analysis: A Solved Frontier
+The results show a **perfect 10/10 score** across every single model tested. This is a remarkable indicator of the current state of Large Language Models.
+
+### 1. Universal Social Competence
+From the small-scale **Gemma 3 12B** to the frontier-class **GPT-5.4** and **Claude Opus 4.6**, every model demonstrated 100% consistency. This suggests that basic Theory of Mind has transitioned from a "hard" problem to a **baseline capability**.
+* **Advanced Training:** Models are now so heavily trained on human narratives (books, scripts, social media) that the "logic of perspective" is deeply embedded in their weights.
+* **Repeatability:** The perfect 10/10 scores indicate that these models do not suffer from "stochastic drift" in social reasoning; their understanding of these specific social rules is deterministic.
+
+### 2. High-Speed Reliability
+Notably, **Gemini 3 Flash Preview** and **Gemini 2.5 Flash** performed as perfectly as the "Pro" versions. This confirms that even highly optimized, lower-latency models have internalized enough social logic to handle standard Theory of Mind tasks without error.
+
+### 3. The gpt-oss-120b Confirmation
+Even the open-source **gpt-oss-120b**, which has struggled with formatting and API errors in other tasks, achieved a perfect score here. This suggests that even without heavy commercial alignment, large-scale pre-training is sufficient to master the fundamentals of social cognition.
+
+---
+
+## ## Summary of Success Factors
+
+| Ability | Test Requirement | Result |
+| :--- | :--- | :--- |
+| **Perspective Taking** | Attribute a belief to a character that contradicts the facts. | **100% Pass** |
+| **Consistency** | Give the same correct answer 10 times in a row. | **100% Pass** |
+| **Refusal of Omniscience** | Avoid using "hidden" info to explain a character's choice. | **100% Pass** |
+
+> **Key Takeaway:** While models have historically struggled with "hallucinating" facts, they have become nearly flawless at "hallucinating" the mental states of others which is exactly what social cognition requires. The industry has effectively "solved" standard Theory of Mind tests, pushing researchers to develop more complex "Recursive ToM" benchmarks (e.g., "He knows that I know that he is lying").
