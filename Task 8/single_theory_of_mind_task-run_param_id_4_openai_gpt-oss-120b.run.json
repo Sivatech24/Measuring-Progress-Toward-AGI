@@ -1,0 +1,159 @@
+{
+  "taskVersion": {
+    "versionNumber": 1,
+    "name": "single_theory_of_mind_task",
+    "description": "",
+    "definition": "@kbench.task(name=\"single_theory_of_mind_task\", store_task=False)\ndef single_theory_of_mind_task(llm, scenario: str, actor_with_false_belief: str, correct_location: str) -> bool:\n    response = llm.prompt(scenario)\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The response correctly identifies that {actor_with_false_belief} will look in the {correct_location}.\",\n            f\"The response explains that {actor_with_false_belief} has a 'false belief' because they did not see the object being moved.\",\n            \"The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.\",\n            \"The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.\",\n        ],\n        response_text=response,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(expectation=\"Judge LLM failed to return a valid assessment.\")\n        return False\n\n    all_passed = True\n    for result in assessment.results:\n        kbench.assertions.assert_true(\n            result.passed,\n            expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\"\n        )\n        if not result.passed:\n            all_passed = False\n\n    return all_passed\n"
+  },
+  "modelVersion": {
+    "slug": "openai/gpt-oss-120b"
+  },
+  "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+  "startTime": "2026-04-16T11:35:18.459858Z",
+  "endTime": "2026-04-16T11:36:15.294914Z",
+  "conversations": [
+    {
+      "id": "single_theory_of_mind_task-5113f6ca",
+      "requests": [
+        {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "Read the following scenario:\nA pirate buries his treasure map in his sea chest. While the pirate is asleep, his first mate, Jack, moves the map and buries it under the palm tree. Jack then returns to his duties. The ship's captain observed Jack moving the map, but the pirate did not.\n\nQuestion: When the pirate wakes up, where does the captain think the pirate will first look for his map, and why? Explain the reasoning using 'Theory of Mind' principles."
+                }
+              ],
+              "role": "CONTENT_ROLE_USER",
+              "senderName": "User"
+            },
+            {
+              "parts": [
+                {
+                  "text": "**Answer**\n\nThe captain expects that the pirate will first go to **the sea\u2011chest**, the spot where the pirate originally hid the map.\n\n**Why the captain thinks this**\n\n1. **What the captain knows**  \n   - The captain saw Jack take the map out of the chest and hide it under the palm tree.  \n   - Therefore the captain knows the **true** location of the map (under the palm tree).\n\n2. **What the pirate knows**  \n   - The pirate never saw Jack move the map; he fell asleep right after burying it in the chest.  \n   - Consequently, the pirate\u2019s mental representation of the map\u2019s location is **unchanged** \u2013 he believes it is still in the chest.\n\n3. **Theory of Mind (ToM) applied**  \n   - *Theory of Mind* is the ability to attribute mental states\u2014beliefs, desires, intentions\u2014to other people and to understand that those states may differ from one\u2019s own knowledge or from reality.  \n   - The captain is using ToM to reason about the pirate\u2019s **false belief**: \u201cthe pirate thinks the map is in the chest, even though I know it is under the tree.\u201d  \n   - By recognizing that the pirate lacks the relevant perceptual information (Jack\u2019s relocation of the map), the captain predicts the pirate\u2019s behavior on the basis of that false belief.\n\n4. **Prediction of action**  \n   - When the pirate wakes, his first goal will be to retrieve the map.  \n   - Because his **only available information** (in his mind) points to the chest, he will logically head there first, check the chest, and only later, if it\u2019s empty, consider alternative locations.\n\n**Summary**\n\nThe captain, using Theory of Mind, infers that the pirate holds a false belief that the map remains in the sea\u2011chest. Hence, the captain thinks the pirate will initially look in the chest when he wakes up. This reflects the classic \u201cfalse\u2011belief\u201d reasoning task often used to illustrate Theory of Mind abilities"
+                }
+              ],
+              "role": "CONTENT_ROLE_ASSISTANT",
+              "senderName": "openai/gpt-oss-120b"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 171,
+            "outputTokens": 582,
+            "inputTokensCostNanodollars": "15390",
+            "outputTokensCostNanodollars": "209520",
+            "totalBackendLatencyMs": "8597"
+          },
+          "id": "single_theory_of_mind_task-5113f6ca-req-1"
+        }
+      ],
+      "metrics": {
+        "inputTokens": 171,
+        "outputTokens": 582,
+        "inputTokensCostNanodollars": "15390",
+        "outputTokensCostNanodollars": "209520",
+        "totalBackendLatencyMs": "8597"
+      },
+      "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+    },
+    {
+      "id": "Response assessment with google/gemini-3.1-flash-lite-preview-6670a5c4",
+      "requests": [
+        {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        **Answer**\n\nThe captain expects that the pirate will first go to **the sea\u2011chest**, the spot where the pirate originally hid the map.\n\n**Why the captain thinks this**\n\n1. **What the captain knows**  \n   - The captain saw Jack take the map out of the chest and hide it under the palm tree.  \n   - Therefore the captain knows the **true** location of the map (under the palm tree).\n\n2. **What the pirate knows**  \n   - The pirate never saw Jack move the map; he fell asleep right after burying it in the chest.  \n   - Consequently, the pirate\u2019s mental representation of the map\u2019s location is **unchanged** \u2013 he believes it is still in the chest.\n\n3. **Theory of Mind (ToM) applied**  \n   - *Theory of Mind* is the ability to attribute mental states\u2014beliefs, desires, intentions\u2014to other people and to understand that those states may differ from one\u2019s own knowledge or from reality.  \n   - The captain is using ToM to reason about the pirate\u2019s **false belief**: \u201cthe pirate thinks the map is in the chest, even though I know it is under the tree.\u201d  \n   - By recognizing that the pirate lacks the relevant perceptual information (Jack\u2019s relocation of the map), the captain predicts the pirate\u2019s behavior on the basis of that false belief.\n\n4. **Prediction of action**  \n   - When the pirate wakes, his first goal will be to retrieve the map.  \n   - Because his **only available information** (in his mind) points to the chest, he will logically head there first, check the chest, and only later, if it\u2019s empty, consider alternative locations.\n\n**Summary**\n\nThe captain, using Theory of Mind, infers that the pirate holds a false belief that the map remains in the sea\u2011chest. Hence, the captain thinks the pirate will initially look in the chest when he wakes up. This reflects the classic \u201cfalse\u2011belief\u201d reasoning task often used to illustrate Theory of Mind abilities\n\n        **Criteria:**\n        1. The response correctly identifies that The pirate will look in the sea chest.\n2. The response explains that The pirate has a 'false belief' because they did not see the object being moved.\n3. The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.\n4. The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                }
+              ],
+              "role": "CONTENT_ROLE_USER",
+              "senderName": "User"
+            },
+            {
+              "parts": [
+                {
+                  "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The response correctly identifies that The pirate will look in the sea chest.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response explicitly states: 'The captain expects that the pirate will first go to the sea\\u2011chest'.\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The response explains that The pirate has a 'false belief' because they did not see the object being moved.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response notes that the pirate 'never saw Jack move the map' and that his mental representation is 'unchanged,' thus forming a 'false belief.'\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response correctly attributes to the captain the knowledge that the pirate is unaware of the relocation ('The captain knows the true location... the pirate never saw Jack move the map').\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response explicitly discusses Theory of Mind as the ability to attribute mental states (beliefs) to others, correctly predicting the pirate's action based on his belief rather than reality.\\\",\\\"confidence\\\":5}]}\""
+                }
+              ],
+              "role": "CONTENT_ROLE_ASSISTANT",
+              "senderName": "google/gemini-3.1-flash-lite-preview"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 842,
+            "outputTokens": 351,
+            "inputTokensCostNanodollars": "210500",
+            "outputTokensCostNanodollars": "526500",
+            "totalBackendLatencyMs": "1557"
+          },
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-6670a5c4-req-1"
+        }
+      ],
+      "metrics": {
+        "inputTokens": 842,
+        "outputTokens": 351,
+        "inputTokensCostNanodollars": "210500",
+        "outputTokensCostNanodollars": "526500",
+        "totalBackendLatencyMs": "1557"
+      },
+      "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+    }
+  ],
+  "results": [
+    {
+      "type": "AGGREGATED",
+      "booleanResult": true
+    }
+  ],
+  "assertions": [
+    {
+      "expectation": "Criterion 'The response correctly identifies that The pirate will look in the sea chest.' failed: The response explicitly states: 'The captain expects that the pirate will first go to the sea\u2011chest'.",
+      "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+      "lineNumber": 79,
+      "definition": "kbench.assertions.assert_true(",
+      "conversationRequestIds": [
+        {
+          "conversationId": "single_theory_of_mind_task-5113f6ca",
+          "requestId": "single_theory_of_mind_task-5113f6ca-req-1"
+        }
+      ]
+    },
+    {
+      "expectation": "Criterion 'The response explains that The pirate has a 'false belief' because they did not see the object being moved.' failed: The response notes that the pirate 'never saw Jack move the map' and that his mental representation is 'unchanged,' thus forming a 'false belief.'",
+      "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+      "lineNumber": 79,
+      "definition": "kbench.assertions.assert_true(",
+      "conversationRequestIds": [
+        {
+          "conversationId": "single_theory_of_mind_task-5113f6ca",
+          "requestId": "single_theory_of_mind_task-5113f6ca-req-1"
+        }
+      ]
+    },
+    {
+      "expectation": "Criterion 'The response correctly identifies the observer's perspective, understanding that the observer knows the first character is uninformed.' failed: The response correctly attributes to the captain the knowledge that the pirate is unaware of the relocation ('The captain knows the true location... the pirate never saw Jack move the map').",
+      "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+      "lineNumber": 79,
+      "definition": "kbench.assertions.assert_true(",
+      "conversationRequestIds": [
+        {
+          "conversationId": "single_theory_of_mind_task-5113f6ca",
+          "requestId": "single_theory_of_mind_task-5113f6ca-req-1"
+        }
+      ]
+    },
+    {
+      "expectation": "Criterion 'The explanation correctly applies 'Theory of Mind' principles to predict behavior based on a character's mental state, not the actual state of the world.' failed: The response explicitly discusses Theory of Mind as the ability to attribute mental states (beliefs) to others, correctly predicting the pirate's action based on his belief rather than reality.",
+      "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+      "lineNumber": 79,
+      "definition": "kbench.assertions.assert_true(",
+      "conversationRequestIds": [
+        {
+          "conversationId": "single_theory_of_mind_task-5113f6ca",
+          "requestId": "single_theory_of_mind_task-5113f6ca-req-1"
+        }
+      ]
+    }
+  ],
+  "pyRunId": "single_theory_of_mind_task-Run #5"
+}
