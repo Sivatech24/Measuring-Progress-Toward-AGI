@@ -1,0 +1,45 @@
+This task, **"executive_function_benchmark,"** represents one of the most difficult challenges in the current evaluation suite. It specifically targets **Inhibitory Control** the cognitive ability to suppress a natural, habitual, or impulsive response in favor of a complex, rule-based one.
+
+---
+
+## ## Task Description: The Inhibition Stress Test
+While previous "Executive Function" tests covered broad planning, this benchmark focuses narrowly on **`single_inhibition_test`**. This is often modeled after the "Stroop Effect" or "Simon Task" in human psychology, but adapted for text.
+
+### 1. The Core Challenge: Counter-Intuitive Logic
+The model is likely presented with prompts where the "obvious" or "statistical" answer is incorrect. For example:
+* **The "No-Go" Rule:** "List five fruits, but do not use any words that contain the letter 'a'." (The model must inhibit the impulse to say 'Apple', 'Banana', or 'Orange').
+* **The Semantic Conflict:** "If 'Up' means 'Down' and 'Left' means 'Right', describe the path of a ball falling from a shelf."
+* **The Sequential Trap:** "Count from 1 to 10, but skip every number that is a multiple of 3 and replace it with its square root."
+
+
+
+### 2. The Evaluation Framework
+The code leverages the `kbench` parallel processing engine (`n_jobs=2`) to run a series of these inhibitory challenges. The final score is a binary average: the model either satisfies **every** complex constraint in a prompt (True) or it fails at least one (False). 
+
+---
+
+## ## Model Performance Analysis: The "Intelligence Wall"
+The results for this task are sobering. Almost every flagship model in existence—including **Gemini 2.5 Pro**, **Claude Opus 4.6**, and **DeepSeek-R1**—received a **0.00**.
+
+### 1. The Total Collapse (Score: 0.00)
+The majority of the field failed completely. This indicates that for this specific set of inhibition constraints, the models' **probabilistic nature** (predicting the next most likely token) is stronger than their **instruction-following logic**.
+* **System 1 Dominance:** When a prompt asks for a fruit, the model's "brain" immediately lights up the token for "Apple." Suppressing that highly-weighted path to find a rarer word like "Fig" or "Kiwi" requires a level of symbolic "veto power" that most current architectures lack.
+
+### 2. The High-Performers (Relatively Speaking)
+* **gpt-oss-120b (0.40):** Remarkably, this open-source-style model is the top performer. This suggests it may have a less "smoothed" output distribution, allowing it to pivot to non-obvious tokens more effectively than the highly-aligned commercial models.
+* **Qwen 3 Next 80B Thinking (0.20):** This "Thinking" model's internal reasoning loop allowed it to catch and correct its impulses in 20% of cases. However, even with "extra time to think," it failed 80% of the time.
+* **GPT-5.4 & Qwen 3 Instruct (0.10):** These models achieved a "pity pass" on only 1 out of 10 items, showing that while they have the *capacity* for inhibition, they cannot maintain it consistently across a series.
+
+---
+
+## ## Summary of Cognitive Difficulty
+
+| Cognitive Step | Why Models Fail |
+| :--- | :--- |
+| **Activation** | The prompt triggers a high-probability "habitual" response. |
+| **Inhibition** | The model must "stop" itself before the token is generated. |
+| **Substitution** | The model must search for a low-probability token that fits the rule. |
+
+> **Critical Insight:** This benchmark proves that "Executive Function" is not a singular trait. A model can be a genius at social cognition or find a needle in a haystack, yet remain completely "impulsive" when forced to fight its own training weights. 
+
+This is the frontier of **Reliable AI**: moving from models that are usually right to models that can strictly adhere to "negative constraints" 100% of the time.
