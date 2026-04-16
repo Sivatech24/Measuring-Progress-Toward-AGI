@@ -1,0 +1,54 @@
+This task, **"needle_in_haystack_test,"** is a specialized variant of the classic retrieval benchmark. While standard "needle" tests often use plain prose, this task specifically targets **structured data retrieval**, forcing the model to parse CSV (Comma-Separated Values) rows to locate non-numeric "needles" (specific strings or facts) buried within a "haystack" of data.
+
+---
+
+## ## Task Description: Structured Data Retrieval
+The goal is to determine if a model can maintain focus and accuracy when information is presented in a dense, repetitive, and structured format.
+
+### 1. The CSV Haystack
+The code uses `create_evaluation_dataset(num_examples=10)` to generate 10 unique test cases. In each case, a "needle" (a specific non-numeric value) is hidden within a large block of CSV data. This mimics real-world enterprise tasks, such as finding a specific customer ID or project code within a massive database export.
+
+### 2. Character-Level Precision
+Unlike prose, where context clues (like "The secret code is...") help the model, CSV data is often context-poor. The model must:
+* **Maintain Column Alignment:** Correctly identify which "cell" it is looking at.
+* **Ignore Repetitive Noise:** Overcome the tendency to skip over repetitive rows or commas.
+* **Extract Exact Strings:** Retrieve the non-numeric needle without altering its capitalization or spelling.
+
+### 3. Quantitative Scoring
+The task calculates a mean **accuracy score** across the 10 runs. A score of **1.00** indicates the model found the correct needle in every single CSV haystack, while lower scores reflect "retrieval failure" where the model either missed the needle or hallucinated a different value.
+
+---
+
+## ## Model Performance Analysis: A Divide in Reliability
+The results show that while "frontier" models have largely mastered this, several specialized and smaller models struggle significantly with structured data.
+
+### The "Perfect" Tier (Score: 1.00)
+A wide range of models, including **GPT-5.4, Gemini 2.5 Pro, Claude Opus 4.6,** and **Gemma 4 31B**, achieved a perfect score.
+* **Robust Attention:** These models have attention mechanisms specifically tuned to handle long-range dependencies in structured formats.
+* **Large Context Efficiency:** They do not suffer from "middle-loss" (the tendency to forget information in the middle of a long prompt), which is crucial when the needle is buried deep in a CSV.
+
+### The "Near-Miss" and Middle Tier
+* **Gemini 2.5 Flash (0.90):** This model missed exactly one out of ten. In "Flash" (smaller/faster) models, slight optimization for speed can occasionally lead to a single "skip" in dense data parsing.
+* **Claude Opus 4.5 (0.60):** A surprisingly low score for a high-tier model, suggesting that earlier versions of the Opus 4 series may have had specific difficulties with non-prose structured data.
+* **Gemma 3 12B & Deepseek V3.1 (0.50):** These models failed half the time. This typically happens because smaller models lose the "structural map" of the CSV and begin to treat the commas and columns as disorganized noise.
+
+### The "Reasoning" Failure: DeepSeek-R1 (Score: 0.00)
+**DeepSeek-R1** failed every single test case.
+* **The Chain-of-Thought (CoT) Trap:** DeepSeek-R1 is a "Thinking" model. In a retrieval task, these models sometimes try to "reason" about why the needle is there or describe the CSV structure rather than simply extracting the value. 
+* **Formatting Errors:** If the model provided the needle but wrapped it in excessive explanation or "thought" blocks, the `kbench` evaluator (expecting a clean extraction) may have marked it as a failure.
+
+---
+
+## ## Summary of Success Factors
+
+| Ability | Importance | Why Models Fail |
+| :--- | :--- | :--- |
+| **Parsing** | High | Miscounting commas or columns in the CSV. |
+| **Retrieval** | High | "Forgetting" the needle due to high noise (haystack). |
+| **Extraction** | Critical | Adding conversational filler instead of the raw value. |
+
+
+
+> **The Takeaway:** This task proves that **structured data extraction** is a distinct skill from **prose retrieval**. While many models are perfect at finding a sentence in a story, the 0.00 score of DeepSeek-R1 and the 0.50 score of Deepseek V3.1 reveal that specific architectures can still be "blinded" by the rigid, repetitive nature of CSV formatting.
+
+Would you prefer an AI that is better at summarizing long stories or one that is 100% accurate at extracting data from spreadsheets?
