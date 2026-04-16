@@ -1,0 +1,6 @@
+{
+  "versionNumber": 1,
+  "name": "needle_in_haystack_test",
+  "description": "Evaluates an LLM's ability to find non-numeric 'needles' in a 'haystack' of CSV data\nover multiple test cases and returns the accuracy.",
+  "definition": "@kbench.task(name=\"needle_in_haystack_test\")\ndef needle_in_haystack_test(llm) -> float:\n    \"\"\"\n    Evaluates an LLM's ability to find non-numeric 'needles' in a 'haystack' of CSV data\n    over multiple test cases and returns the accuracy.\n    \"\"\"\n    evaluation_df = create_evaluation_dataset(num_examples=10)\n\n    with kbench.client.enable_cache():\n        runs = find_needles_in_csv_row.evaluate(\n            llm=[llm],\n            evaluation_data=evaluation_df,\n            n_jobs=2,\n            remove_run_files=True\n        )\n\n    if not runs:\n        kbench.assertions.assert_fail(\"Evaluation failed to produce any runs.\")\n        return 0.0\n        \n    results_df = runs.as_dataframe()\n    if 'result' not in results_df.columns or results_df.empty:\n        return 0.0\n\n    accuracy = float(results_df.result.mean())\n    \n    return accuracy\n"
+}
