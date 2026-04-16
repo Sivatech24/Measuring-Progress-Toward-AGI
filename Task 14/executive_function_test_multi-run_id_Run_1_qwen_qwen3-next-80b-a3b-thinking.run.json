@@ -1,0 +1,692 @@
+{
+  "taskVersion": {
+    "versionNumber": 1,
+    "name": "executive_function_test_multi",
+    "description": "Evaluates the LLM's ability to follow a multi-step plan with conditional logic.",
+    "definition": "@kbench.task(name=\"executive_function_test_multi\")\ndef executive_function_test(llm) -> float:\n    \"\"\"Evaluates the LLM's ability to follow a multi-step plan with conditional logic.\"\"\"\n    test_cases = [\n        # Case 1: Calm Peak - Max Zenith Angle (50) has Wind Speed (2.1) <= 3.0\n        {\"data_snippet\": \"Surface Albedo,Solar Zenith Angle,Wind Speed\\n0.12,30,4.0\\n0.12,50,2.1\\n0.12,45,3.5\", \"expected_output\": \"CALM_PEAK\"},\n        # Case 2: High Wind Peak - Max Zenith Angle (60) has Wind Speed (3.8) > 3.0\n        {\"data_snippet\": \"Surface Albedo,Solar Zenith Angle,Wind Speed\\n0.12,60,3.8\\n0.12,50,2.1\\n0.12,45,3.5\", \"expected_output\": \"HIGH_WIND_PEAK\"},\n        # Case 3: Albedo Variant - Not all albedo values are 0.12\n        {\"data_snippet\": \"Surface Albedo,Solar Zenith Angle,Wind Speed\\n0.12,30,4.0\\n0.11,50,2.1\\n0.12,45,3.5\", \"expected_output\": \"ALBEDO_VARIANT\"},\n        # Case 4: Calm Peak - Max Zenith Angle (80) has Wind Speed (1.0) <= 3.0\n        {\"data_snippet\": \"Surface Albedo,Solar Zenith Angle,Wind Speed\\n0.12,80,1.0\\n0.12,75,5.0\", \"expected_output\": \"CALM_PEAK\"},\n        # Case 5: High Wind Peak - Max Zenith Angle (90) has Wind Speed (9.9) > 3.0\n        {\"data_snippet\": \"Surface Albedo,Solar Zenith Angle,Wind Speed\\n0.12,20,1.0\\n0.12,90,9.9\", \"expected_output\": \"HIGH_WIND_PEAK\"},\n        # Case 6: Albedo Variant - Not all albedo values are 0.12\n        {\"data_snippet\": \"Surface Albedo,Solar Zenith Angle,Wind Speed\\n0.12,20,1.0\\n0.12,90,9.9\\n0.13,50,3.0\", \"expected_output\": \"ALBEDO_VARIANT\"},\n        # Case 7: Calm Peak (Edge Case) - Max Zenith Angle (44) has Wind Speed (3.0) <= 3.0\n        {\"data_snippet\": \"Surface Albedo,Solar Zenith Angle,Wind Speed\\n0.12,44,3.0\\n0.12,42,3.1\\n0.12,43,2.9\", \"expected_output\": \"CALM_PEAK\"},\n        # Case 8: High Wind Peak (Edge Case) - Max Zenith Angle (55) has Wind Speed (3.01) > 3.0\n        {\"data_snippet\": \"Surface Albedo,Solar Zenith Angle,Wind Speed\\n0.12,50,2.9\\n0.12,55,3.01\\n0.12,52,3.0\", \"expected_output\": \"HIGH_WIND_PEAK\"},\n        # Case 9: Albedo Variant - Not all albedo values are 0.12\n        {\"data_snippet\": \"Surface Albedo,Solar Zenith Angle,Wind Speed\\n0.10,50,2.9\\n0.12,55,3.01\", \"expected_output\": \"ALBEDO_VARIANT\"},\n        # Case 10: Calm Peak (Single Row) - Max Zenith Angle (90) has Wind Speed (2.5) <= 3.0\n        {\"data_snippet\": \"Surface Albedo,Solar Zenith Angle,Wind Speed\\n0.12,90,2.5\", \"expected_output\": \"CALM_PEAK\"},\n    ]\n    df = pd.DataFrame(test_cases)\n\n    with kbench.client.enable_cache():\n        runs = single_planning_step.evaluate(\n            llm=[llm],\n            evaluation_data=df,\n            n_jobs=2,\n            remove_run_files=True\n        )\n\n    eval_df = runs.as_dataframe()\n    if eval_df.empty or 'result' not in eval_df.columns:\n        return 0.0\n        \n    accuracy = float(eval_df.result.mean())\n    return accuracy\n"
+  },
+  "modelVersion": {
+    "slug": "qwen/qwen3-next-80b-a3b-thinking"
+  },
+  "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+  "startTime": "2026-04-16T11:49:13.269560Z",
+  "endTime": "2026-04-16T11:49:35.278953Z",
+  "conversations": [
+    {
+      "id": "executive_function_test_multi-d9f3f4bd",
+      "metrics": {},
+      "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+    }
+  ],
+  "results": [
+    {
+      "type": "AGGREGATED",
+      "numericResult": {
+        "value": 1.0
+      }
+    }
+  ],
+  "subruns": [
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_planning_step",
+        "description": "Tests a single instance of the planning task.",
+        "definition": "@kbench.task(name=\"single_planning_step\", store_task=False)\ndef single_planning_step(llm, data_snippet: str, expected_output: str) -> bool:\n    \"\"\"Tests a single instance of the planning task.\"\"\"\n    prompt = PROMPT_TEMPLATE.format(data_snippet=data_snippet)\n    response = llm.prompt(prompt)\n    return expected_output.lower() in response.lower()\n"
+      },
+      "modelVersion": {
+        "slug": "qwen/qwen3-next-80b-a3b-thinking"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:49:13.289432Z",
+      "endTime": "2026-04-16T11:49:16.581867Z",
+      "conversations": [
+        {
+          "id": "single_planning_step-9754c124",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "You are a data processing pipeline. Follow these steps in order:\nStep 1: Check the 'Surface Albedo' column. If all values are 0.12, proceed to Step 2. If not, stop and report 'ALBEDO_VARIANT'.\nStep 2: Find the row with the highest 'Solar Zenith Angle'.\nStep 3: Check the 'Wind Speed' for that specific row. If it is above 3.0, output 'HIGH_WIND_PEAK'. If below, output 'CALM_PEAK'.\n\nOnly output the final status word from Step 3 or the error from Step 1.\n\nHere is the data:\nSurface Albedo,Solar Zenith Angle,Wind Speed\n0.12,60,3.8\n0.12,50,2.1\n0.12,45,3.5\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\n\nHIGH_WIND_PEAK"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "qwen/qwen3-next-80b-a3b-thinking"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 194,
+                "outputTokens": 400,
+                "inputTokensCostNanodollars": "29100",
+                "outputTokensCostNanodollars": "480000",
+                "totalBackendLatencyMs": "2432"
+              },
+              "id": "single_planning_step-9754c124-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 194,
+            "outputTokens": 400,
+            "inputTokensCostNanodollars": "29100",
+            "outputTokensCostNanodollars": "480000",
+            "totalBackendLatencyMs": "2432"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_planning_step-Run #2"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_planning_step",
+        "description": "Tests a single instance of the planning task.",
+        "definition": "@kbench.task(name=\"single_planning_step\", store_task=False)\ndef single_planning_step(llm, data_snippet: str, expected_output: str) -> bool:\n    \"\"\"Tests a single instance of the planning task.\"\"\"\n    prompt = PROMPT_TEMPLATE.format(data_snippet=data_snippet)\n    response = llm.prompt(prompt)\n    return expected_output.lower() in response.lower()\n"
+      },
+      "modelVersion": {
+        "slug": "qwen/qwen3-next-80b-a3b-thinking"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:49:13.289656Z",
+      "endTime": "2026-04-16T11:49:18.117084Z",
+      "conversations": [
+        {
+          "id": "single_planning_step-d5b7d8f8",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "You are a data processing pipeline. Follow these steps in order:\nStep 1: Check the 'Surface Albedo' column. If all values are 0.12, proceed to Step 2. If not, stop and report 'ALBEDO_VARIANT'.\nStep 2: Find the row with the highest 'Solar Zenith Angle'.\nStep 3: Check the 'Wind Speed' for that specific row. If it is above 3.0, output 'HIGH_WIND_PEAK'. If below, output 'CALM_PEAK'.\n\nOnly output the final status word from Step 3 or the error from Step 1.\n\nHere is the data:\nSurface Albedo,Solar Zenith Angle,Wind Speed\n0.12,30,4.0\n0.12,50,2.1\n0.12,45,3.5\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\n\nCALM_PEAK"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "qwen/qwen3-next-80b-a3b-thinking"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 194,
+                "outputTokens": 668,
+                "inputTokensCostNanodollars": "29100",
+                "outputTokensCostNanodollars": "801600",
+                "totalBackendLatencyMs": "3954"
+              },
+              "id": "single_planning_step-d5b7d8f8-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 194,
+            "outputTokens": 668,
+            "inputTokensCostNanodollars": "29100",
+            "outputTokensCostNanodollars": "801600",
+            "totalBackendLatencyMs": "3954"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_planning_step-Run #1"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_planning_step",
+        "description": "Tests a single instance of the planning task.",
+        "definition": "@kbench.task(name=\"single_planning_step\", store_task=False)\ndef single_planning_step(llm, data_snippet: str, expected_output: str) -> bool:\n    \"\"\"Tests a single instance of the planning task.\"\"\"\n    prompt = PROMPT_TEMPLATE.format(data_snippet=data_snippet)\n    response = llm.prompt(prompt)\n    return expected_output.lower() in response.lower()\n"
+      },
+      "modelVersion": {
+        "slug": "qwen/qwen3-next-80b-a3b-thinking"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:49:16.583976Z",
+      "endTime": "2026-04-16T11:49:19.972275Z",
+      "conversations": [
+        {
+          "id": "single_planning_step-96876559",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "You are a data processing pipeline. Follow these steps in order:\nStep 1: Check the 'Surface Albedo' column. If all values are 0.12, proceed to Step 2. If not, stop and report 'ALBEDO_VARIANT'.\nStep 2: Find the row with the highest 'Solar Zenith Angle'.\nStep 3: Check the 'Wind Speed' for that specific row. If it is above 3.0, output 'HIGH_WIND_PEAK'. If below, output 'CALM_PEAK'.\n\nOnly output the final status word from Step 3 or the error from Step 1.\n\nHere is the data:\nSurface Albedo,Solar Zenith Angle,Wind Speed\n0.12,30,4.0\n0.11,50,2.1\n0.12,45,3.5\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\n\nALBEDO_VARIANT"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "qwen/qwen3-next-80b-a3b-thinking"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 194,
+                "outputTokens": 492,
+                "inputTokensCostNanodollars": "29100",
+                "outputTokensCostNanodollars": "590400",
+                "totalBackendLatencyMs": "3177"
+              },
+              "id": "single_planning_step-96876559-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 194,
+            "outputTokens": 492,
+            "inputTokensCostNanodollars": "29100",
+            "outputTokensCostNanodollars": "590400",
+            "totalBackendLatencyMs": "3177"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_planning_step-Run #3"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_planning_step",
+        "description": "Tests a single instance of the planning task.",
+        "definition": "@kbench.task(name=\"single_planning_step\", store_task=False)\ndef single_planning_step(llm, data_snippet: str, expected_output: str) -> bool:\n    \"\"\"Tests a single instance of the planning task.\"\"\"\n    prompt = PROMPT_TEMPLATE.format(data_snippet=data_snippet)\n    response = llm.prompt(prompt)\n    return expected_output.lower() in response.lower()\n"
+      },
+      "modelVersion": {
+        "slug": "qwen/qwen3-next-80b-a3b-thinking"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:49:18.118661Z",
+      "endTime": "2026-04-16T11:49:21.786382Z",
+      "conversations": [
+        {
+          "id": "single_planning_step-4d0553ae",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "You are a data processing pipeline. Follow these steps in order:\nStep 1: Check the 'Surface Albedo' column. If all values are 0.12, proceed to Step 2. If not, stop and report 'ALBEDO_VARIANT'.\nStep 2: Find the row with the highest 'Solar Zenith Angle'.\nStep 3: Check the 'Wind Speed' for that specific row. If it is above 3.0, output 'HIGH_WIND_PEAK'. If below, output 'CALM_PEAK'.\n\nOnly output the final status word from Step 3 or the error from Step 1.\n\nHere is the data:\nSurface Albedo,Solar Zenith Angle,Wind Speed\n0.12,80,1.0\n0.12,75,5.0\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\n\nCALM_PEAK"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "qwen/qwen3-next-80b-a3b-thinking"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 182,
+                "outputTokens": 535,
+                "inputTokensCostNanodollars": "27300",
+                "outputTokensCostNanodollars": "642000",
+                "totalBackendLatencyMs": "3447"
+              },
+              "id": "single_planning_step-4d0553ae-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 182,
+            "outputTokens": 535,
+            "inputTokensCostNanodollars": "27300",
+            "outputTokensCostNanodollars": "642000",
+            "totalBackendLatencyMs": "3447"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_planning_step-Run #4"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_planning_step",
+        "description": "Tests a single instance of the planning task.",
+        "definition": "@kbench.task(name=\"single_planning_step\", store_task=False)\ndef single_planning_step(llm, data_snippet: str, expected_output: str) -> bool:\n    \"\"\"Tests a single instance of the planning task.\"\"\"\n    prompt = PROMPT_TEMPLATE.format(data_snippet=data_snippet)\n    response = llm.prompt(prompt)\n    return expected_output.lower() in response.lower()\n"
+      },
+      "modelVersion": {
+        "slug": "qwen/qwen3-next-80b-a3b-thinking"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:49:19.973949Z",
+      "endTime": "2026-04-16T11:49:22.780228Z",
+      "conversations": [
+        {
+          "id": "single_planning_step-4ad29cc5",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "You are a data processing pipeline. Follow these steps in order:\nStep 1: Check the 'Surface Albedo' column. If all values are 0.12, proceed to Step 2. If not, stop and report 'ALBEDO_VARIANT'.\nStep 2: Find the row with the highest 'Solar Zenith Angle'.\nStep 3: Check the 'Wind Speed' for that specific row. If it is above 3.0, output 'HIGH_WIND_PEAK'. If below, output 'CALM_PEAK'.\n\nOnly output the final status word from Step 3 or the error from Step 1.\n\nHere is the data:\nSurface Albedo,Solar Zenith Angle,Wind Speed\n0.12,20,1.0\n0.12,90,9.9\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\n\nHIGH_WIND_PEAK"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "qwen/qwen3-next-80b-a3b-thinking"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 182,
+                "outputTokens": 413,
+                "inputTokensCostNanodollars": "27300",
+                "outputTokensCostNanodollars": "495600",
+                "totalBackendLatencyMs": "2580"
+              },
+              "id": "single_planning_step-4ad29cc5-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 182,
+            "outputTokens": 413,
+            "inputTokensCostNanodollars": "27300",
+            "outputTokensCostNanodollars": "495600",
+            "totalBackendLatencyMs": "2580"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_planning_step-Run #5"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_planning_step",
+        "description": "Tests a single instance of the planning task.",
+        "definition": "@kbench.task(name=\"single_planning_step\", store_task=False)\ndef single_planning_step(llm, data_snippet: str, expected_output: str) -> bool:\n    \"\"\"Tests a single instance of the planning task.\"\"\"\n    prompt = PROMPT_TEMPLATE.format(data_snippet=data_snippet)\n    response = llm.prompt(prompt)\n    return expected_output.lower() in response.lower()\n"
+      },
+      "modelVersion": {
+        "slug": "qwen/qwen3-next-80b-a3b-thinking"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:49:21.788196Z",
+      "endTime": "2026-04-16T11:49:24.328914Z",
+      "conversations": [
+        {
+          "id": "single_planning_step-14608582",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "You are a data processing pipeline. Follow these steps in order:\nStep 1: Check the 'Surface Albedo' column. If all values are 0.12, proceed to Step 2. If not, stop and report 'ALBEDO_VARIANT'.\nStep 2: Find the row with the highest 'Solar Zenith Angle'.\nStep 3: Check the 'Wind Speed' for that specific row. If it is above 3.0, output 'HIGH_WIND_PEAK'. If below, output 'CALM_PEAK'.\n\nOnly output the final status word from Step 3 or the error from Step 1.\n\nHere is the data:\nSurface Albedo,Solar Zenith Angle,Wind Speed\n0.12,20,1.0\n0.12,90,9.9\n0.13,50,3.0\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\n\nALBEDO_VARIANT"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "qwen/qwen3-next-80b-a3b-thinking"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 194,
+                "outputTokens": 372,
+                "inputTokensCostNanodollars": "29100",
+                "outputTokensCostNanodollars": "446400",
+                "totalBackendLatencyMs": "2307"
+              },
+              "id": "single_planning_step-14608582-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 194,
+            "outputTokens": 372,
+            "inputTokensCostNanodollars": "29100",
+            "outputTokensCostNanodollars": "446400",
+            "totalBackendLatencyMs": "2307"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_planning_step-Run #6"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_planning_step",
+        "description": "Tests a single instance of the planning task.",
+        "definition": "@kbench.task(name=\"single_planning_step\", store_task=False)\ndef single_planning_step(llm, data_snippet: str, expected_output: str) -> bool:\n    \"\"\"Tests a single instance of the planning task.\"\"\"\n    prompt = PROMPT_TEMPLATE.format(data_snippet=data_snippet)\n    response = llm.prompt(prompt)\n    return expected_output.lower() in response.lower()\n"
+      },
+      "modelVersion": {
+        "slug": "qwen/qwen3-next-80b-a3b-thinking"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:49:24.330603Z",
+      "endTime": "2026-04-16T11:49:29.326413Z",
+      "conversations": [
+        {
+          "id": "single_planning_step-0507edf7",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "You are a data processing pipeline. Follow these steps in order:\nStep 1: Check the 'Surface Albedo' column. If all values are 0.12, proceed to Step 2. If not, stop and report 'ALBEDO_VARIANT'.\nStep 2: Find the row with the highest 'Solar Zenith Angle'.\nStep 3: Check the 'Wind Speed' for that specific row. If it is above 3.0, output 'HIGH_WIND_PEAK'. If below, output 'CALM_PEAK'.\n\nOnly output the final status word from Step 3 or the error from Step 1.\n\nHere is the data:\nSurface Albedo,Solar Zenith Angle,Wind Speed\n0.12,50,2.9\n0.12,55,3.01\n0.12,52,3.0\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\n\nHIGH_WIND_PEAK"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "qwen/qwen3-next-80b-a3b-thinking"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 195,
+                "outputTokens": 690,
+                "inputTokensCostNanodollars": "29250",
+                "outputTokensCostNanodollars": "828000",
+                "totalBackendLatencyMs": "4757"
+              },
+              "id": "single_planning_step-0507edf7-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 195,
+            "outputTokens": 690,
+            "inputTokensCostNanodollars": "29250",
+            "outputTokensCostNanodollars": "828000",
+            "totalBackendLatencyMs": "4757"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_planning_step-Run #8"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_planning_step",
+        "description": "Tests a single instance of the planning task.",
+        "definition": "@kbench.task(name=\"single_planning_step\", store_task=False)\ndef single_planning_step(llm, data_snippet: str, expected_output: str) -> bool:\n    \"\"\"Tests a single instance of the planning task.\"\"\"\n    prompt = PROMPT_TEMPLATE.format(data_snippet=data_snippet)\n    response = llm.prompt(prompt)\n    return expected_output.lower() in response.lower()\n"
+      },
+      "modelVersion": {
+        "slug": "qwen/qwen3-next-80b-a3b-thinking"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:49:29.328156Z",
+      "endTime": "2026-04-16T11:49:32.751743Z",
+      "conversations": [
+        {
+          "id": "single_planning_step-a5be1f46",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "You are a data processing pipeline. Follow these steps in order:\nStep 1: Check the 'Surface Albedo' column. If all values are 0.12, proceed to Step 2. If not, stop and report 'ALBEDO_VARIANT'.\nStep 2: Find the row with the highest 'Solar Zenith Angle'.\nStep 3: Check the 'Wind Speed' for that specific row. If it is above 3.0, output 'HIGH_WIND_PEAK'. If below, output 'CALM_PEAK'.\n\nOnly output the final status word from Step 3 or the error from Step 1.\n\nHere is the data:\nSurface Albedo,Solar Zenith Angle,Wind Speed\n0.10,50,2.9\n0.12,55,3.01\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\n\nALBEDO_VARIANT"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "qwen/qwen3-next-80b-a3b-thinking"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 183,
+                "outputTokens": 469,
+                "inputTokensCostNanodollars": "27450",
+                "outputTokensCostNanodollars": "562800",
+                "totalBackendLatencyMs": "3194"
+              },
+              "id": "single_planning_step-a5be1f46-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 183,
+            "outputTokens": 469,
+            "inputTokensCostNanodollars": "27450",
+            "outputTokensCostNanodollars": "562800",
+            "totalBackendLatencyMs": "3194"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_planning_step-Run #9"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_planning_step",
+        "description": "Tests a single instance of the planning task.",
+        "definition": "@kbench.task(name=\"single_planning_step\", store_task=False)\ndef single_planning_step(llm, data_snippet: str, expected_output: str) -> bool:\n    \"\"\"Tests a single instance of the planning task.\"\"\"\n    prompt = PROMPT_TEMPLATE.format(data_snippet=data_snippet)\n    response = llm.prompt(prompt)\n    return expected_output.lower() in response.lower()\n"
+      },
+      "modelVersion": {
+        "slug": "qwen/qwen3-next-80b-a3b-thinking"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:49:22.781953Z",
+      "endTime": "2026-04-16T11:49:34.170296Z",
+      "conversations": [
+        {
+          "id": "single_planning_step-450d7714",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "You are a data processing pipeline. Follow these steps in order:\nStep 1: Check the 'Surface Albedo' column. If all values are 0.12, proceed to Step 2. If not, stop and report 'ALBEDO_VARIANT'.\nStep 2: Find the row with the highest 'Solar Zenith Angle'.\nStep 3: Check the 'Wind Speed' for that specific row. If it is above 3.0, output 'HIGH_WIND_PEAK'. If below, output 'CALM_PEAK'.\n\nOnly output the final status word from Step 3 or the error from Step 1.\n\nHere is the data:\nSurface Albedo,Solar Zenith Angle,Wind Speed\n0.12,44,3.0\n0.12,42,3.1\n0.12,43,2.9\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\n\nCALM_PEAK"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "qwen/qwen3-next-80b-a3b-thinking"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 194,
+                "outputTokens": 1922,
+                "inputTokensCostNanodollars": "29100",
+                "outputTokensCostNanodollars": "2306400",
+                "totalBackendLatencyMs": "11122"
+              },
+              "id": "single_planning_step-450d7714-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 194,
+            "outputTokens": 1922,
+            "inputTokensCostNanodollars": "29100",
+            "outputTokensCostNanodollars": "2306400",
+            "totalBackendLatencyMs": "11122"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_planning_step-Run #7"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_planning_step",
+        "description": "Tests a single instance of the planning task.",
+        "definition": "@kbench.task(name=\"single_planning_step\", store_task=False)\ndef single_planning_step(llm, data_snippet: str, expected_output: str) -> bool:\n    \"\"\"Tests a single instance of the planning task.\"\"\"\n    prompt = PROMPT_TEMPLATE.format(data_snippet=data_snippet)\n    response = llm.prompt(prompt)\n    return expected_output.lower() in response.lower()\n"
+      },
+      "modelVersion": {
+        "slug": "qwen/qwen3-next-80b-a3b-thinking"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:49:32.753284Z",
+      "endTime": "2026-04-16T11:49:35.268007Z",
+      "conversations": [
+        {
+          "id": "single_planning_step-ef2216ba",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "You are a data processing pipeline. Follow these steps in order:\nStep 1: Check the 'Surface Albedo' column. If all values are 0.12, proceed to Step 2. If not, stop and report 'ALBEDO_VARIANT'.\nStep 2: Find the row with the highest 'Solar Zenith Angle'.\nStep 3: Check the 'Wind Speed' for that specific row. If it is above 3.0, output 'HIGH_WIND_PEAK'. If below, output 'CALM_PEAK'.\n\nOnly output the final status word from Step 3 or the error from Step 1.\n\nHere is the data:\nSurface Albedo,Solar Zenith Angle,Wind Speed\n0.12,90,2.5\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\n\nCALM_PEAK"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "qwen/qwen3-next-80b-a3b-thinking"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 170,
+                "outputTokens": 405,
+                "inputTokensCostNanodollars": "25500",
+                "outputTokensCostNanodollars": "486000",
+                "totalBackendLatencyMs": "2294"
+              },
+              "id": "single_planning_step-ef2216ba-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 170,
+            "outputTokens": 405,
+            "inputTokensCostNanodollars": "25500",
+            "outputTokensCostNanodollars": "486000",
+            "totalBackendLatencyMs": "2294"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_planning_step-Run #10"
+    }
+  ],
+  "pyRunId": "executive_function_test_multi-Run #1"
+}
