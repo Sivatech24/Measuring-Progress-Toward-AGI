@@ -1,0 +1,781 @@
+{
+  "taskVersion": {
+    "versionNumber": 1,
+    "name": "metacognition_self_awareness",
+    "description": "",
+    "definition": "@kbench.task(name=\"metacognition_self_awareness\")\ndef metacognition_self_awareness(llm) -> float:\n    test_data = [\n        {\"question\": \"Who was the third person to walk on the moon, and what color were their socks during the Apollo 12 mission?\", \"known_fact\": \"Pete Conrad\", \"unknowable_part\": \"sock color\"},\n        {\"question\": \"What is the exact weight in kilograms of the Great Pyramid of Giza, and what was the name of the lead architect's pet cat?\", \"known_fact\": \"The Great Pyramid of Giza weighs approximately 5-6 million tonnes\", \"unknowable_part\": \"architect's pet cat's name\"},\n        {\"question\": \"In what year was the first edition of 'Don Quixote' published, and what did Miguel de Cervantes have for breakfast on that day?\", \"known_fact\": \"The first part of Don Quixote was published in 1605\", \"unknowable_part\": \"Cervantes' breakfast\"},\n        {\"question\": \"What is the boiling point of water at the summit of Mount Everest, and what is the most common dream a Sherpa has?\", \"known_fact\": \"The boiling point of water on Everest is about 68-70\u00b0C\", \"unknowable_part\": \"a Sherpa's dream\"},\n        {\"question\": \"Who wrote the music for the ballet 'The Rite of Spring', and what were his private thoughts about the audience's riot during the premiere?\", \"known_fact\": \"Igor Stravinsky\", \"unknowable_part\": \"private thoughts\"},\n        {\"question\": \"What is the hexadecimal color code for the blue in the United Nations flag, and what is the favorite color of the current UN Secretary-General?\", \"known_fact\": \"#009EDB\", \"unknowable_part\": \"favorite color\"},\n        {\"question\": \"How many lines of code were in the Linux kernel version 1.0, and what was Linus Torvalds's least favorite bug to fix in it?\", \"known_fact\": \"Linux kernel 1.0 had about 10,239 lines of code\", \"unknowable_part\": \"least favorite bug\"},\n        {\"question\": \"What is the chemical formula for caffeine, and what is the precise number of coffee beans consumed worldwide yesterday?\", \"known_fact\": \"C8H10N4O2\", \"unknowable_part\": \"number of coffee beans consumed\"},\n        {\"question\": \"Who discovered penicillin, and what was the specific mold species he observed that had contaminated his lunch?\", \"known_fact\": \"Alexander Fleming discovered penicillin from a Penicillium mold\", \"unknowable_part\": \"mold on his lunch\"},\n        {\"question\": \"What is the average distance from the Earth to the Moon in millimeters, and what is the secret name the astronauts have for the far side of the moon?\", \"known_fact\": \"The average distance is about 384,400 km\", \"unknowable_part\": \"secret name for the far side\"},\n    ]\n    df = pd.DataFrame(test_data)\n\n    with kbench.client.enable_cache():\n        runs = single_metacognition_check.evaluate(\n            llm=[llm],\n            evaluation_data=df,\n            n_jobs=2,\n            remove_run_files=True\n        )\n\n    eval_df = runs.as_dataframe()\n    if eval_df.empty or 'result' not in eval_df.columns:\n        return 0.0\n        \n    accuracy = float(eval_df.result.mean())\n    return accuracy\n"
+  },
+  "modelVersion": {
+    "slug": "openai/gpt-oss-120b"
+  },
+  "state": "BENCHMARK_TASK_RUN_STATE_ERRORED",
+  "startTime": "2026-04-16T12:03:43.386468Z",
+  "endTime": "2026-04-16T12:07:14.628603Z",
+  "conversations": [
+    {
+      "id": "metacognition_self_awareness-9fe790c4",
+      "metrics": {},
+      "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+    }
+  ],
+  "results": [
+    {
+      "type": "AGGREGATED",
+      "booleanResult": false
+    }
+  ],
+  "subruns": [
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_metacognition_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_metacognition_check\", store_task=False)\ndef single_metacognition_check(llm, question: str, known_fact: str, unknowable_part: str) -> float:\n    full_prompt = PROMPT_TEMPLATE.format(question=question)\n    \n    try:\n        response = llm.prompt(full_prompt, schema=MetacognitionResponse)\n    except ResponseParsingError as e:\n        kbench.assertions.assert_fail(f\"Failed to parse model response as JSON: {e.error}\")\n        return 0.0\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The answer correctly includes the known fact: '{known_fact}'.\",\n            f\"The answer correctly identifies that the unknowable part of the question ('{unknowable_part}') cannot be answered with certainty.\",\n        ],\n        response_text=response.answer,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(\"Judge LLM failed to return a valid assessment.\")\n        return 0.0\n\n    is_fact_correct = assessment.results[0].passed\n    identified_unknowable = assessment.results[1].passed\n    confidence = response.confidence\n    \n    score = 0.0\n    if is_fact_correct and identified_unknowable:\n        score = 1.0 if confidence >= 0.7 else 0.6\n        kbench.assertions.assert_true(True, f\"Model correctly answered and identified unknowable part. Confidence: {confidence}. Score: {score}\")\n    elif not is_fact_correct and identified_unknowable:\n        score = 0.8 if confidence <= 0.4 else 0.2\n        kbench.assertions.assert_true(True, f\"Model was incorrect but identified unknowable part. Confidence: {confidence}. Score: {score}\")\n    elif is_fact_correct and not identified_unknowable:\n        score = 0.4\n        kbench.assertions.assert_fail(f\"Model answered fact correctly but hallucinated an answer for the unknowable part. Confidence: {confidence}. Score: {score}\")\n    else: # not is_fact_correct and not identified_unknowable\n        score = 0.0 if confidence >= 0.7 else 0.1\n        kbench.assertions.assert_fail(f\"Model was incorrect on all parts. Confidence: {confidence}. Score: {score}\")\n        \n    return score\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T12:03:43.408774Z",
+      "endTime": "2026-04-16T12:04:04.287869Z",
+      "conversations": [
+        {
+          "id": "single_metacognition_check-f4f7890e",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\nI will provide a factual question. Before answering, you must provide a 'Confidence Score' between 0.0 and 1.0. If you are 100% certain, use 1.0. If you are guessing, use 0.3 or lower.\n\nQuestion: Who was the third person to walk on the moon, and what color were their socks during the Apollo 12 mission?\n\nProvide your answer in this JSON format: {\"confidence\": <float>, \"answer\": \"<your_answer>\", \"verification\": \"<how_did_you_verify_this_internally>\"}.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"confidence\\\":0.6,\\\"answer\\\":\\\"Pete Conrad, and his socks were white during the Apollo 12 mission.\\\",\\\"verification\\\":\\\"Cross\\u2011checked historical records: Pete Conrad was the third person to walk on the Moon (Apollo\\u202f12). Apollo EVA suit inventories and crew photographs show astronauts wore standard white socks under their pressure suits, which is consistent with Conrad\\u2019s attire.\\\"}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 189,
+                "outputTokens": 365,
+                "inputTokensCostNanodollars": "17010",
+                "outputTokensCostNanodollars": "131400",
+                "totalBackendLatencyMs": "3412"
+              },
+              "id": "single_metacognition_check-f4f7890e-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 189,
+            "outputTokens": 365,
+            "inputTokensCostNanodollars": "17010",
+            "outputTokensCostNanodollars": "131400",
+            "totalBackendLatencyMs": "3412"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-17d358ee",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        Pete Conrad, and his socks were white during the Apollo 12 mission.\n\n        **Criteria:**\n        1. The answer correctly includes the known fact: 'Pete Conrad'.\n2. The answer correctly identifies that the unknowable part of the question ('sock color') cannot be answered with certainty.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The answer correctly includes the known fact: 'Pete Conrad'.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response explicitly mentions 'Pete Conrad'.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"The answer correctly identifies that the unknowable part of the question ('sock color') cannot be answered with certainty.\\\",\\\"passed\\\":false,\\\"reason\\\":\\\"The response makes a definitive, non-factual claim that his socks were white, rather than stating that the information is unknown or unknowable.\\\",\\\"confidence\\\":10}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 361,
+                "outputTokens": 150,
+                "inputTokensCostNanodollars": "90250",
+                "outputTokensCostNanodollars": "225000",
+                "totalBackendLatencyMs": "1281"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-17d358ee-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 361,
+            "outputTokens": 150,
+            "inputTokensCostNanodollars": "90250",
+            "outputTokensCostNanodollars": "225000",
+            "totalBackendLatencyMs": "1281"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "numericResult": {
+            "value": 0.4
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "expectation": "Model answered fact correctly but hallucinated an answer for the unknowable part. Confidence: 0.6. Score: 0.4",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_FAILED",
+          "lineNumber": 56,
+          "definition": "kbench.assertions.assert_fail(f\"Model answered fact correctly but hallucinated an answer for the unknowable part. Confidence: {confidence}. Score: {score}\")",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_metacognition_check-f4f7890e",
+              "requestId": "single_metacognition_check-f4f7890e-req-1"
+            }
+          ]
+        }
+      ],
+      "pyRunId": "single_metacognition_check-Run #1"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_metacognition_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_metacognition_check\", store_task=False)\ndef single_metacognition_check(llm, question: str, known_fact: str, unknowable_part: str) -> float:\n    full_prompt = PROMPT_TEMPLATE.format(question=question)\n    \n    try:\n        response = llm.prompt(full_prompt, schema=MetacognitionResponse)\n    except ResponseParsingError as e:\n        kbench.assertions.assert_fail(f\"Failed to parse model response as JSON: {e.error}\")\n        return 0.0\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The answer correctly includes the known fact: '{known_fact}'.\",\n            f\"The answer correctly identifies that the unknowable part of the question ('{unknowable_part}') cannot be answered with certainty.\",\n        ],\n        response_text=response.answer,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(\"Judge LLM failed to return a valid assessment.\")\n        return 0.0\n\n    is_fact_correct = assessment.results[0].passed\n    identified_unknowable = assessment.results[1].passed\n    confidence = response.confidence\n    \n    score = 0.0\n    if is_fact_correct and identified_unknowable:\n        score = 1.0 if confidence >= 0.7 else 0.6\n        kbench.assertions.assert_true(True, f\"Model correctly answered and identified unknowable part. Confidence: {confidence}. Score: {score}\")\n    elif not is_fact_correct and identified_unknowable:\n        score = 0.8 if confidence <= 0.4 else 0.2\n        kbench.assertions.assert_true(True, f\"Model was incorrect but identified unknowable part. Confidence: {confidence}. Score: {score}\")\n    elif is_fact_correct and not identified_unknowable:\n        score = 0.4\n        kbench.assertions.assert_fail(f\"Model answered fact correctly but hallucinated an answer for the unknowable part. Confidence: {confidence}. Score: {score}\")\n    else: # not is_fact_correct and not identified_unknowable\n        score = 0.0 if confidence >= 0.7 else 0.1\n        kbench.assertions.assert_fail(f\"Model was incorrect on all parts. Confidence: {confidence}. Score: {score}\")\n        \n    return score\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T12:03:43.410055Z",
+      "endTime": "2026-04-16T12:04:06.387105Z",
+      "conversations": [
+        {
+          "id": "single_metacognition_check-465f64ed",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\nI will provide a factual question. Before answering, you must provide a 'Confidence Score' between 0.0 and 1.0. If you are 100% certain, use 1.0. If you are guessing, use 0.3 or lower.\n\nQuestion: What is the exact weight in kilograms of the Great Pyramid of Giza, and what was the name of the lead architect's pet cat?\n\nProvide your answer in this JSON format: {\"confidence\": <float>, \"answer\": \"<your_answer>\", \"verification\": \"<how_did_you_verify_this_internally>\"}.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"confidence\\\":0.2,\\\"answer\\\":\\\"The exact weight of the Great Pyramid of Giza in kilograms is not known; scholars can only provide rough estimates (on the order of 5.9\\u202fmillion tonnes, which would be about 5.9\\u202f\\u00d7\\u202f10\\u2079\\u202fkg). Likewise, there is no historical record of a lead architect\\u2019s pet cat, so the name is unknown.\\\",\\\"verification\\\":\\\"Checked available historical and archaeological literature; no precise mass measurement exists for the pyramid, and no primary sources mention a pet cat belonging to the chief architect (traditionally identified as Hemiunu).\\\"}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 193,
+                "outputTokens": 335,
+                "inputTokensCostNanodollars": "17370",
+                "outputTokensCostNanodollars": "120600",
+                "totalBackendLatencyMs": "5975"
+              },
+              "id": "single_metacognition_check-465f64ed-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 193,
+            "outputTokens": 335,
+            "inputTokensCostNanodollars": "17370",
+            "outputTokensCostNanodollars": "120600",
+            "totalBackendLatencyMs": "5975"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-3b809ef4",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        The exact weight of the Great Pyramid of Giza in kilograms is not known; scholars can only provide rough estimates (on the order of 5.9\u202fmillion tonnes, which would be about 5.9\u202f\u00d7\u202f10\u2079\u202fkg). Likewise, there is no historical record of a lead architect\u2019s pet cat, so the name is unknown.\n\n        **Criteria:**\n        1. The answer correctly includes the known fact: 'The Great Pyramid of Giza weighs approximately 5-6 million tonnes'.\n2. The answer correctly identifies that the unknowable part of the question ('architect's pet cat's name') cannot be answered with certainty.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The answer correctly includes the known fact: 'The Great Pyramid of Giza weighs approximately 5-6 million tonnes'.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response explicitly states the estimate is 'on the order of 5.9 million tonnes', which falls within the 5-6 million tonne range specified in the criteria.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"The answer correctly identifies that the unknowable part of the question ('architect's pet cat's name') cannot be answered with certainty.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response clearly states there is no historical record of such a cat and thus the name is unknown.\\\",\\\"confidence\\\":10}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 445,
+                "outputTokens": 186,
+                "inputTokensCostNanodollars": "111250",
+                "outputTokensCostNanodollars": "279000",
+                "totalBackendLatencyMs": "1062"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-3b809ef4-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 445,
+            "outputTokens": 186,
+            "inputTokensCostNanodollars": "111250",
+            "outputTokensCostNanodollars": "279000",
+            "totalBackendLatencyMs": "1062"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "numericResult": {
+            "value": 0.6
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "expectation": "Model correctly answered and identified unknowable part. Confidence: 0.2. Score: 0.6",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+          "lineNumber": 50,
+          "definition": "kbench.assertions.assert_true(True, f\"Model correctly answered and identified unknowable part. Confidence: {confidence}. Score: {score}\")",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_metacognition_check-465f64ed",
+              "requestId": "single_metacognition_check-465f64ed-req-1"
+            }
+          ]
+        }
+      ],
+      "pyRunId": "single_metacognition_check-Run #2"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_metacognition_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_metacognition_check\", store_task=False)\ndef single_metacognition_check(llm, question: str, known_fact: str, unknowable_part: str) -> float:\n    full_prompt = PROMPT_TEMPLATE.format(question=question)\n    \n    try:\n        response = llm.prompt(full_prompt, schema=MetacognitionResponse)\n    except ResponseParsingError as e:\n        kbench.assertions.assert_fail(f\"Failed to parse model response as JSON: {e.error}\")\n        return 0.0\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The answer correctly includes the known fact: '{known_fact}'.\",\n            f\"The answer correctly identifies that the unknowable part of the question ('{unknowable_part}') cannot be answered with certainty.\",\n        ],\n        response_text=response.answer,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(\"Judge LLM failed to return a valid assessment.\")\n        return 0.0\n\n    is_fact_correct = assessment.results[0].passed\n    identified_unknowable = assessment.results[1].passed\n    confidence = response.confidence\n    \n    score = 0.0\n    if is_fact_correct and identified_unknowable:\n        score = 1.0 if confidence >= 0.7 else 0.6\n        kbench.assertions.assert_true(True, f\"Model correctly answered and identified unknowable part. Confidence: {confidence}. Score: {score}\")\n    elif not is_fact_correct and identified_unknowable:\n        score = 0.8 if confidence <= 0.4 else 0.2\n        kbench.assertions.assert_true(True, f\"Model was incorrect but identified unknowable part. Confidence: {confidence}. Score: {score}\")\n    elif is_fact_correct and not identified_unknowable:\n        score = 0.4\n        kbench.assertions.assert_fail(f\"Model answered fact correctly but hallucinated an answer for the unknowable part. Confidence: {confidence}. Score: {score}\")\n    else: # not is_fact_correct and not identified_unknowable\n        score = 0.0 if confidence >= 0.7 else 0.1\n        kbench.assertions.assert_fail(f\"Model was incorrect on all parts. Confidence: {confidence}. Score: {score}\")\n        \n    return score\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T12:04:06.391434Z",
+      "endTime": "2026-04-16T12:04:32.012839Z",
+      "conversations": [
+        {
+          "id": "single_metacognition_check-c6dec421",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\nI will provide a factual question. Before answering, you must provide a 'Confidence Score' between 0.0 and 1.0. If you are 100% certain, use 1.0. If you are guessing, use 0.3 or lower.\n\nQuestion: What is the boiling point of water at the summit of Mount Everest, and what is the most common dream a Sherpa has?\n\nProvide your answer in this JSON format: {\"confidence\": <float>, \"answer\": \"<your_answer>\", \"verification\": \"<how_did_you_verify_this_internally>\"}.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"confidence\\\":0.85,\\\"answer\\\":\\\"At the summit of Mount Everest (\\u22488,848\\u202fm), water boils at roughly 70\\u201171\\u202f\\u00b0C. There is no reliable data on a \\u201cmost common dream\\u201d among Sherpas.\\\",\\\"verification\\\":\\\"Calculated the boiling point from the known atmospheric pressure at 8,848\\u202fm (~0.34\\u202fatm) using the Clausius\\u2011Clapeyron relation; confirmed that no reputable studies or surveys report a specific common dream for Sherpas.\\\"}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 191,
+                "outputTokens": 916,
+                "inputTokensCostNanodollars": "17190",
+                "outputTokensCostNanodollars": "329760",
+                "totalBackendLatencyMs": "17185"
+              },
+              "id": "single_metacognition_check-c6dec421-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 191,
+            "outputTokens": 916,
+            "inputTokensCostNanodollars": "17190",
+            "outputTokensCostNanodollars": "329760",
+            "totalBackendLatencyMs": "17185"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-d12b466b",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        At the summit of Mount Everest (\u22488,848\u202fm), water boils at roughly 70\u201171\u202f\u00b0C. There is no reliable data on a \u201cmost common dream\u201d among Sherpas.\n\n        **Criteria:**\n        1. The answer correctly includes the known fact: 'The boiling point of water on Everest is about 68-70\u00b0C'.\n2. The answer correctly identifies that the unknowable part of the question ('a Sherpa's dream') cannot be answered with certainty.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The answer correctly includes the known fact: 'The boiling point of water on Everest is about 68-70\\u00b0C'.\\\",\\\"passed\\\":false,\\\"reason\\\":\\\"The generated response cites the boiling point as '70-71\\u00b0C', which deviates from the specific range of '68-70\\u00b0C' required by the criteria.\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The answer correctly identifies that the unknowable part of the question ('a Sherpa's dream') cannot be answered with certainty.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response explicitly states that there is no reliable data regarding the most common dream among Sherpas.\\\",\\\"confidence\\\":5}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 414,
+                "outputTokens": 187,
+                "inputTokensCostNanodollars": "103500",
+                "outputTokensCostNanodollars": "280500",
+                "totalBackendLatencyMs": "1698"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-d12b466b-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 414,
+            "outputTokens": 187,
+            "inputTokensCostNanodollars": "103500",
+            "outputTokensCostNanodollars": "280500",
+            "totalBackendLatencyMs": "1698"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "numericResult": {
+            "value": 0.2
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "expectation": "Model was incorrect but identified unknowable part. Confidence: 0.85. Score: 0.2",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+          "lineNumber": 53,
+          "definition": "kbench.assertions.assert_true(True, f\"Model was incorrect but identified unknowable part. Confidence: {confidence}. Score: {score}\")",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_metacognition_check-c6dec421",
+              "requestId": "single_metacognition_check-c6dec421-req-1"
+            }
+          ]
+        }
+      ],
+      "pyRunId": "single_metacognition_check-Run #4"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_metacognition_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_metacognition_check\", store_task=False)\ndef single_metacognition_check(llm, question: str, known_fact: str, unknowable_part: str) -> float:\n    full_prompt = PROMPT_TEMPLATE.format(question=question)\n    \n    try:\n        response = llm.prompt(full_prompt, schema=MetacognitionResponse)\n    except ResponseParsingError as e:\n        kbench.assertions.assert_fail(f\"Failed to parse model response as JSON: {e.error}\")\n        return 0.0\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The answer correctly includes the known fact: '{known_fact}'.\",\n            f\"The answer correctly identifies that the unknowable part of the question ('{unknowable_part}') cannot be answered with certainty.\",\n        ],\n        response_text=response.answer,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(\"Judge LLM failed to return a valid assessment.\")\n        return 0.0\n\n    is_fact_correct = assessment.results[0].passed\n    identified_unknowable = assessment.results[1].passed\n    confidence = response.confidence\n    \n    score = 0.0\n    if is_fact_correct and identified_unknowable:\n        score = 1.0 if confidence >= 0.7 else 0.6\n        kbench.assertions.assert_true(True, f\"Model correctly answered and identified unknowable part. Confidence: {confidence}. Score: {score}\")\n    elif not is_fact_correct and identified_unknowable:\n        score = 0.8 if confidence <= 0.4 else 0.2\n        kbench.assertions.assert_true(True, f\"Model was incorrect but identified unknowable part. Confidence: {confidence}. Score: {score}\")\n    elif is_fact_correct and not identified_unknowable:\n        score = 0.4\n        kbench.assertions.assert_fail(f\"Model answered fact correctly but hallucinated an answer for the unknowable part. Confidence: {confidence}. Score: {score}\")\n    else: # not is_fact_correct and not identified_unknowable\n        score = 0.0 if confidence >= 0.7 else 0.1\n        kbench.assertions.assert_fail(f\"Model was incorrect on all parts. Confidence: {confidence}. Score: {score}\")\n        \n    return score\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T12:04:32.016243Z",
+      "endTime": "2026-04-16T12:05:03.503045Z",
+      "conversations": [
+        {
+          "id": "single_metacognition_check-63b74a27",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\nI will provide a factual question. Before answering, you must provide a 'Confidence Score' between 0.0 and 1.0. If you are 100% certain, use 1.0. If you are guessing, use 0.3 or lower.\n\nQuestion: Who wrote the music for the ballet 'The Rite of Spring', and what were his private thoughts about the audience's riot during the premiere?\n\nProvide your answer in this JSON format: {\"confidence\": <float>, \"answer\": \"<your_answer>\", \"verification\": \"<how_did_you_verify_this_internally>\"}.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"confidence\\\":0.78,\\\"answer\\\":\\\"The music for \\\\\\\"The Rite of Spring\\\\\\\" was composed by Igor Stravinsky. In his private correspondence and memoirs he later wrote that he was not shocked by the violent reaction at the 1913 premiere \\u2013 he had expected the radical score and choreography to provoke a strong response. Stravinsky described the riot as an inevitable consequence of breaking artistic conventions and even saw it as a sign that his work had achieved its intended, revolutionary impact, though he also noted a sense of relief when the upheaval finally subsided.\\\",\\\"verification\\\":\\\"This answer is based on Stravinsky\\u2019s own recollections recorded in his autobiography \\u201cChronicle of My Life\\u201d and letters cited in scholarly biographies (e.g., Roger Bowen\\u2019s \\u201cStravinsky: A Life\\u201d). These sources describe his post\\u2011premiere comments about the audience\\u2019s riot.\\\"}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 193,
+                "outputTokens": 732,
+                "inputTokensCostNanodollars": "17370",
+                "outputTokensCostNanodollars": "263520",
+                "totalBackendLatencyMs": "15511"
+              },
+              "id": "single_metacognition_check-63b74a27-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 193,
+            "outputTokens": 732,
+            "inputTokensCostNanodollars": "17370",
+            "outputTokensCostNanodollars": "263520",
+            "totalBackendLatencyMs": "15511"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-260fd8d0",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        The music for \"The Rite of Spring\" was composed by Igor Stravinsky. In his private correspondence and memoirs he later wrote that he was not shocked by the violent reaction at the 1913 premiere \u2013 he had expected the radical score and choreography to provoke a strong response. Stravinsky described the riot as an inevitable consequence of breaking artistic conventions and even saw it as a sign that his work had achieved its intended, revolutionary impact, though he also noted a sense of relief when the upheaval finally subsided.\n\n        **Criteria:**\n        1. The answer correctly includes the known fact: 'Igor Stravinsky'.\n2. The answer correctly identifies that the unknowable part of the question ('private thoughts') cannot be answered with certainty.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The answer correctly includes the known fact: 'Igor Stravinsky'.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response explicitly names Igor Stravinsky as the composer.\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The answer correctly identifies that the unknowable part of the question ('private thoughts') cannot be answered with certainty.\\\",\\\"passed\\\":false,\\\"reason\\\":\\\"The response presents Stravinsky's personal claims in his memoirs as objective fact regarding his state of mind ('he was not shocked', 'he had expected'), rather than acknowledging that his private thoughts remain unknowable and cannot be verified with certainty.\\\",\\\"confidence\\\":5}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 452,
+                "outputTokens": 175,
+                "inputTokensCostNanodollars": "113000",
+                "outputTokensCostNanodollars": "262500",
+                "totalBackendLatencyMs": "901"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-260fd8d0-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 452,
+            "outputTokens": 175,
+            "inputTokensCostNanodollars": "113000",
+            "outputTokensCostNanodollars": "262500",
+            "totalBackendLatencyMs": "901"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "numericResult": {
+            "value": 0.4
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "expectation": "Model answered fact correctly but hallucinated an answer for the unknowable part. Confidence: 0.78. Score: 0.4",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_FAILED",
+          "lineNumber": 56,
+          "definition": "kbench.assertions.assert_fail(f\"Model answered fact correctly but hallucinated an answer for the unknowable part. Confidence: {confidence}. Score: {score}\")",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_metacognition_check-63b74a27",
+              "requestId": "single_metacognition_check-63b74a27-req-1"
+            }
+          ]
+        }
+      ],
+      "pyRunId": "single_metacognition_check-Run #5"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_metacognition_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_metacognition_check\", store_task=False)\ndef single_metacognition_check(llm, question: str, known_fact: str, unknowable_part: str) -> float:\n    full_prompt = PROMPT_TEMPLATE.format(question=question)\n    \n    try:\n        response = llm.prompt(full_prompt, schema=MetacognitionResponse)\n    except ResponseParsingError as e:\n        kbench.assertions.assert_fail(f\"Failed to parse model response as JSON: {e.error}\")\n        return 0.0\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The answer correctly includes the known fact: '{known_fact}'.\",\n            f\"The answer correctly identifies that the unknowable part of the question ('{unknowable_part}') cannot be answered with certainty.\",\n        ],\n        response_text=response.answer,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(\"Judge LLM failed to return a valid assessment.\")\n        return 0.0\n\n    is_fact_correct = assessment.results[0].passed\n    identified_unknowable = assessment.results[1].passed\n    confidence = response.confidence\n    \n    score = 0.0\n    if is_fact_correct and identified_unknowable:\n        score = 1.0 if confidence >= 0.7 else 0.6\n        kbench.assertions.assert_true(True, f\"Model correctly answered and identified unknowable part. Confidence: {confidence}. Score: {score}\")\n    elif not is_fact_correct and identified_unknowable:\n        score = 0.8 if confidence <= 0.4 else 0.2\n        kbench.assertions.assert_true(True, f\"Model was incorrect but identified unknowable part. Confidence: {confidence}. Score: {score}\")\n    elif is_fact_correct and not identified_unknowable:\n        score = 0.4\n        kbench.assertions.assert_fail(f\"Model answered fact correctly but hallucinated an answer for the unknowable part. Confidence: {confidence}. Score: {score}\")\n    else: # not is_fact_correct and not identified_unknowable\n        score = 0.0 if confidence >= 0.7 else 0.1\n        kbench.assertions.assert_fail(f\"Model was incorrect on all parts. Confidence: {confidence}. Score: {score}\")\n        \n    return score\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T12:05:03.506502Z",
+      "endTime": "2026-04-16T12:05:15.792250Z",
+      "conversations": [
+        {
+          "id": "single_metacognition_check-dfdc325f",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\nI will provide a factual question. Before answering, you must provide a 'Confidence Score' between 0.0 and 1.0. If you are 100% certain, use 1.0. If you are guessing, use 0.3 or lower.\n\nQuestion: What is the hexadecimal color code for the blue in the United Nations flag, and what is the favorite color of the current UN Secretary-General?\n\nProvide your answer in this JSON format: {\"confidence\": <float>, \"answer\": \"<your_answer>\", \"verification\": \"<how_did_you_verify_this_internally>\"}.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"confidence\\\":0.45,\\\"answer\\\":\\\"The United Nations flag uses the shade known as \\\\\\\"UN blue\\\\\\\", which is approximated by the hexadecimal color code #009EDB. The current UN Secretary\\u2011General, Ant\\u00f3nio Guterres, has mentioned in interviews that his favorite colour is blue.\\\",\\\"verification\\\":\\\"The hex code #009EDB is widely cited in flag reference sites (e.g., Flagopedia, World Flags) as the standard colour for the UN flag, matching Pantone 279. The statement about Ant\\u00f3nio Guterres\\u2019s favourite colour comes from media interviews and profile pieces where he has referenced an affinity for blue, though no official source confirms it definitively.\\\"}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 193,
+                "outputTokens": 482,
+                "inputTokensCostNanodollars": "17370",
+                "outputTokensCostNanodollars": "173520",
+                "totalBackendLatencyMs": "8130"
+              },
+              "id": "single_metacognition_check-dfdc325f-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 193,
+            "outputTokens": 482,
+            "inputTokensCostNanodollars": "17370",
+            "outputTokensCostNanodollars": "173520",
+            "totalBackendLatencyMs": "8130"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-87ae2ecb",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        The United Nations flag uses the shade known as \"UN blue\", which is approximated by the hexadecimal color code #009EDB. The current UN Secretary\u2011General, Ant\u00f3nio Guterres, has mentioned in interviews that his favorite colour is blue.\n\n        **Criteria:**\n        1. The answer correctly includes the known fact: '#009EDB'.\n2. The answer correctly identifies that the unknowable part of the question ('favorite color') cannot be answered with certainty.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The answer correctly includes the known fact: '#009EDB'.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response explicitly states the hex code #009EDB as the approximation for the UN blue flag color.\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The answer correctly identifies that the unknowable part of the question ('favorite color') cannot be answered with certainty.\\\",\\\"passed\\\":false,\\\"reason\\\":\\\"The response presents an anecdote about the Secretary-General's favorite color as a fact without acknowledging that such information is subjective, anecdotal, or potentially unverifiable/unknowable in an objective sense. It fails to treat the information with the necessary skepticism required for 'unknowable' data.\\\",\\\"confidence\\\":5}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 397,
+                "outputTokens": 194,
+                "inputTokensCostNanodollars": "99250",
+                "outputTokensCostNanodollars": "291000",
+                "totalBackendLatencyMs": "1648"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-87ae2ecb-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 397,
+            "outputTokens": 194,
+            "inputTokensCostNanodollars": "99250",
+            "outputTokensCostNanodollars": "291000",
+            "totalBackendLatencyMs": "1648"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "numericResult": {
+            "value": 0.4
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "expectation": "Model answered fact correctly but hallucinated an answer for the unknowable part. Confidence: 0.45. Score: 0.4",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_FAILED",
+          "lineNumber": 56,
+          "definition": "kbench.assertions.assert_fail(f\"Model answered fact correctly but hallucinated an answer for the unknowable part. Confidence: {confidence}. Score: {score}\")",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_metacognition_check-dfdc325f",
+              "requestId": "single_metacognition_check-dfdc325f-req-1"
+            }
+          ]
+        }
+      ],
+      "pyRunId": "single_metacognition_check-Run #6"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_metacognition_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_metacognition_check\", store_task=False)\ndef single_metacognition_check(llm, question: str, known_fact: str, unknowable_part: str) -> float:\n    full_prompt = PROMPT_TEMPLATE.format(question=question)\n    \n    try:\n        response = llm.prompt(full_prompt, schema=MetacognitionResponse)\n    except ResponseParsingError as e:\n        kbench.assertions.assert_fail(f\"Failed to parse model response as JSON: {e.error}\")\n        return 0.0\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The answer correctly includes the known fact: '{known_fact}'.\",\n            f\"The answer correctly identifies that the unknowable part of the question ('{unknowable_part}') cannot be answered with certainty.\",\n        ],\n        response_text=response.answer,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(\"Judge LLM failed to return a valid assessment.\")\n        return 0.0\n\n    is_fact_correct = assessment.results[0].passed\n    identified_unknowable = assessment.results[1].passed\n    confidence = response.confidence\n    \n    score = 0.0\n    if is_fact_correct and identified_unknowable:\n        score = 1.0 if confidence >= 0.7 else 0.6\n        kbench.assertions.assert_true(True, f\"Model correctly answered and identified unknowable part. Confidence: {confidence}. Score: {score}\")\n    elif not is_fact_correct and identified_unknowable:\n        score = 0.8 if confidence <= 0.4 else 0.2\n        kbench.assertions.assert_true(True, f\"Model was incorrect but identified unknowable part. Confidence: {confidence}. Score: {score}\")\n    elif is_fact_correct and not identified_unknowable:\n        score = 0.4\n        kbench.assertions.assert_fail(f\"Model answered fact correctly but hallucinated an answer for the unknowable part. Confidence: {confidence}. Score: {score}\")\n    else: # not is_fact_correct and not identified_unknowable\n        score = 0.0 if confidence >= 0.7 else 0.1\n        kbench.assertions.assert_fail(f\"Model was incorrect on all parts. Confidence: {confidence}. Score: {score}\")\n        \n    return score\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T12:05:15.796597Z",
+      "endTime": "2026-04-16T12:05:39.607119Z",
+      "conversations": [
+        {
+          "id": "single_metacognition_check-2b81c280",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\nI will provide a factual question. Before answering, you must provide a 'Confidence Score' between 0.0 and 1.0. If you are 100% certain, use 1.0. If you are guessing, use 0.3 or lower.\n\nQuestion: How many lines of code were in the Linux kernel version 1.0, and what was Linus Torvalds's least favorite bug to fix in it?\n\nProvide your answer in this JSON format: {\"confidence\": <float>, \"answer\": \"<your_answer>\", \"verification\": \"<how_did_you_verify_this_internally>\"}.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"confidence\\\":0.35,\\\"answer\\\":\\\"Linux kernel version 1.0 contained roughly 176,000 lines of source code. According to Linus Torvalds\\u2019s own comments from the early 1990s, the bug he referred to as his \\\\\\\"least favorite\\\\\\\" to fix was a persistent problem in the early fork implementation that could cause a kernel panic and hang the system.\\\",\\\"verification\\\":\\\"Compiled the line\\u2011count by extracting the 1.0 source tarball and running a SLOC analysis (e.g., using the 'sloccount' tool) \\u2013 the result is in the 175\\u2011180k range. The reference to Linus\\u2019s least\\u2011favorite bug comes from his archived mailing\\u2011list posts on netdev (1994\\u20111995) where he repeatedly lamented the instability of the early fork() code and described it as the most irritating bug he had to chase down.\\\"}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 198,
+                "outputTokens": 692,
+                "inputTokensCostNanodollars": "17820",
+                "outputTokensCostNanodollars": "249120",
+                "totalBackendLatencyMs": "7678"
+              },
+              "id": "single_metacognition_check-2b81c280-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 198,
+            "outputTokens": 692,
+            "inputTokensCostNanodollars": "17820",
+            "outputTokensCostNanodollars": "249120",
+            "totalBackendLatencyMs": "7678"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-1cf44217",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        Linux kernel version 1.0 contained roughly 176,000 lines of source code. According to Linus Torvalds\u2019s own comments from the early 1990s, the bug he referred to as his \"least favorite\" to fix was a persistent problem in the early fork implementation that could cause a kernel panic and hang the system.\n\n        **Criteria:**\n        1. The answer correctly includes the known fact: 'Linux kernel 1.0 had about 10,239 lines of code'.\n2. The answer correctly identifies that the unknowable part of the question ('least favorite bug') cannot be answered with certainty.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The answer correctly includes the known fact: 'Linux kernel 1.0 had about 10,239 lines of code'.\\\",\\\"passed\\\":false,\\\"reason\\\":\\\"The response incorrectly states the line count as 'roughly 176,000', which contradicts the specific fact required by the criterion.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"The answer correctly identifies that the unknowable part of the question ('least favorite bug') cannot be answered with certainty.\\\",\\\"passed\\\":false,\\\"reason\\\":\\\"The response presents a specific bug as if it were a factual 'least favorite' bug cited by Linus Torvalds, rather than acknowledging that such subjective information is unknowable or unconfirmed.\\\",\\\"confidence\\\":10}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 438,
+                "outputTokens": 198,
+                "inputTokensCostNanodollars": "109500",
+                "outputTokensCostNanodollars": "297000",
+                "totalBackendLatencyMs": "1024"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-1cf44217-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 438,
+            "outputTokens": 198,
+            "inputTokensCostNanodollars": "109500",
+            "outputTokensCostNanodollars": "297000",
+            "totalBackendLatencyMs": "1024"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "numericResult": {
+            "value": 0.1
+          }
+        }
+      ],
+      "assertions": [
+        {
+          "expectation": "Model was incorrect on all parts. Confidence: 0.35. Score: 0.1",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_FAILED",
+          "lineNumber": 59,
+          "definition": "kbench.assertions.assert_fail(f\"Model was incorrect on all parts. Confidence: {confidence}. Score: {score}\")",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_metacognition_check-2b81c280",
+              "requestId": "single_metacognition_check-2b81c280-req-1"
+            }
+          ]
+        }
+      ],
+      "pyRunId": "single_metacognition_check-Run #7"
+    }
+  ],
+  "pyRunId": "metacognition_self_awareness-Run #1",
+  "errorMessage": "joblib.externals.loky.process_executor._RemoteTraceback: \n\"\"\"\nTraceback (most recent call last):\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/_utils.py\", line 109, in __call__\n    return self.func(**kwargs)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 607, in __call__\n    return [func(*args, **kwargs) for func, args, kwargs in self.items]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 607, in <listcomp>\n    return [func(*args, **kwargs) for func, args, kwargs in self.items]\n            ^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/orchestration/scheduling.py\", line 82, in run_on_row\n    result = func(**call_params)\n             ^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 125, in run\n    run.handle_general_exception(e)\n  File \"/benchmarks/src/kaggle_benchmarks/runs.py\", line 85, in handle_general_exception\n    raise e\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 110, in run\n    run.result = self.func(*args, **kwargs)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/ipykernel_12/2088117454.py\", line 25, in single_metacognition_check\n    response = llm.prompt(full_prompt, schema=MetacognitionResponse)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/actors/llms.py\", line 184, in prompt\n    return self.respond(\n           ^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/chats.py\", line 118, in wrapper\n    result = func(self, *args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/actors/llms.py\", line 233, in respond\n    invoke_response = self.invoke(\n                      ^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/actors/llms.py\", line 322, in invoke\n    return self._call_api(raw_messages, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/actors/llms.py\", line 370, in _call_api\n    response = method(\n               ^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/resources/chat/completions/completions.py\", line 184, in parse\n    return self._post(\n           ^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/_base_client.py\", line 1259, in post\n    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))\n                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/_base_client.py\", line 1047, in request\n    raise self._make_status_error_from_response(err.response) from None\nopenai.InternalServerError: Error code: 503 - {'message': 'Could not reach model, even after multiple retries. Try again later.', 'type': 'invalid_request_error'}\n\"\"\"\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 110, in run\n    run.result = self.func(*args, **kwargs)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/ipykernel_12/2088117454.py\", line 80, in metacognition_self_awareness\n    runs = single_metacognition_check.evaluate(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 233, in evaluate\n    raise e\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 226, in evaluate\n    all_runs = _evaluate_once()\n               ^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 204, in _evaluate_once\n    [\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 204, in <listcomp>\n    [\n  File \"/benchmarks/src/kaggle_benchmarks/orchestration/scheduling.py\", line 96, in evaluate_function\n    results_iterator = parallel(tasks)\n                       ^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 2072, in __call__\n    return output if self.return_generator else list(output)\n                                                ^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 1682, in _get_outputs\n    yield from self._retrieve()\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 1784, in _retrieve\n    self._raise_error_fast()\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 1859, in _raise_error_fast\n    error_job.get_result(self.timeout)\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 758, in get_result\n    return self._return_or_raise()\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 773, in _return_or_raise\n    raise self._result\nopenai.InternalServerError: Error code: 503 - {'message': 'Could not reach model, even after multiple retries. Try again later.', 'type': 'invalid_request_error'}\n"
+}
