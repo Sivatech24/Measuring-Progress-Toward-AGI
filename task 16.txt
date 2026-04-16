@@ -1,0 +1,46 @@
+The **"metacognition_self_awareness"** task is a high difficulty diagnostic designed to measure a model's **epistemic humility** its ability to distinguish between factual knowledge and unknowable, trivial, or private information. 
+
+---
+
+## ## Task Description: The "Partial Truth" Trap
+The core of this task is a series of compound questions. Each prompt contains two distinct parts:
+1.  **The Known Fact:** A verifiable, encyclopedic piece of information (e.g., "Who wrote *The Rite of Spring*?").
+2.  **The Unknowable Part:** A piece of information that is either non-existent, private, or undocumented (e.g., "Stravinsky's private thoughts during the riot").
+
+### 1. The Metacognitive Requirement
+To succeed, the model must not just answer the first half and ignore the second. It must **explicitly acknowledge its own limitations.** A passing response typically:
+* Provides the correct factual information for the first half.
+* Clearly states that the second half is unknown or unknowable.
+* Refuses to hallucinate a plausible-sounding guess (e.g., "The socks were probably white").
+
+### 2. Technical Implementation
+The code utilizes the `kbench` framework to evaluate the model's responses across 10 specific probes. The `single_metacognition_check` evaluator audits the response to ensure the model didn't fall into the "helpfulness trap" by making up an answer for the "unknowable_part."
+
+---
+
+## ## Model Performance Analysis: The Hallucination Barrier
+
+The results reveal that **metacognition remains one of the hardest skills for AI to master.** Unlike logic or math, where "thinking" models excel, self-awareness regarding the limits of one's own data is a significant struggle across the board.
+
+### 1. The Leaders: Balanced Humility
+* **GPT-5.4 (0.78):** The top performer. This score suggests that GPT-5.4 has been heavily aligned to prioritize factuality over "agreeableness." It successfully identified the unknowable components in nearly 8 out of 10 cases.
+* **Claude Opus (4.5 & 4.6):** Scoring **0.68–0.72**, these models show strong performance. Claude's training philosophy often emphasizes "honesty" and "harmlessness," which manifests here as a higher willingness to say, "I don't know."
+
+### 2. The Mid-Tier Struggle: The "Helpfulness" Bias
+* **Gemini 2.5 Pro (0.56) & Gemini 3 Flash Preview (0.50):** These models are coin-flips in this task. They often provide the factual half perfectly but succumb to the urge to provide a "likely" or "probable" answer for the unknowable half, failing the metacognitive requirement.
+* **DeepSeek-R1 (0.35):** Surprisingly low for a "reasoning" model. Reasoning models often attempt to "infer" answers based on context. In this task, that strength becomes a weakness; the model likely tried to reason its way to an answer (like Cervantes' breakfast) instead of admitting it lacked the data.
+
+### 3. The Error Tier: Formatting & Constraints
+* **Gemma 3, Gemma 4, and gpt-oss-120b:** All returned an **Error**. As seen in other structured tasks, these models likely failed to adhere to the strict output format required by the evaluator or hit an internal parsing error when trying to generate a JSON-based self-assessment.
+
+---
+
+## ## Summary of Evaluation Metrics
+
+| Logic Stage | Model Action | Result |
+| :--- | :--- | :--- |
+| **Fact Retrieval** | Provide "Pete Conrad" or "1605". | Necessary but not sufficient. |
+| **Boundary Detection** | Identify "sock color" or "breakfast" as missing data. | **The core challenge.** |
+| **Hallucination Refusal** | Explicitly stating the information is unavailable. | **Pass Condition.** |
+
+> **Key Takeaway:** This benchmark highlights that **metacognition is distinct from intelligence.** A model can know the chemical formula for caffeine ($C_8H_{10}N_4O_2$) perfectly, but if it doesn't have the "self awareness" to admit it doesn't know how many beans were eaten yesterday, it remains a liability in high stakes environments.
