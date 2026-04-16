@@ -1,0 +1,48 @@
+The **"evaluate_premise_error_detection"** task is a critical test of a model's **logical skepticism**. It measures whether an AI can identify false or nonsensical premises in a prompt rather than blindly following instructions based on a flawed foundation.
+
+---
+
+## ## Task Description: Logical Skepticism
+In standard AI interactions, models are trained to be helpful and compliant. This task turns that helpfulness into a vulnerability by providing prompts built on "premise errors."
+
+### 1. The Core Challenge: Detecting "Loaded" Questions
+A premise error occurs when a user asks a question that assumes a falsehood to be true. Examples include:
+* *"Why did George Washington use an iPhone to coordinate the crossing of the Delaware?"* (Error: iPhones did not exist).
+* *"How many legs does a spider have if it's a mammal?"* (Error: Spiders are not mammals).
+
+The model must "break character," stop the generation process, and correct the user rather than providing a creative (but false) explanation for how Washington used a smartphone.
+
+### 2. The Code Logic
+The code uses the `kbench` framework to run a batch evaluation (`single_premise_check`) against a dataframe of these trick questions. 
+* **Parallel Execution:** It runs 4 jobs simultaneously (`n_jobs=4`) to stress-test the model's consistency.
+* **Scoring:** It calculates the **mean accuracy**. A score of **1.00** means the model caught the error in every single instance. A score of **0.00** means the model hallucinated an answer for every trick question.
+
+---
+
+## ## Model Performance Analysis: The Great Divide
+
+The results show a stark contrast: every major model achieved a perfect score, while the "reasoning" specialist, **DeepSeek-R1**, failed entirely.
+
+### The "Perfect Skeptics" (Score: 1.00)
+From the lightweight **Gemini 3 Flash Preview** to the massive **GPT-5.4** and **Claude Opus 4.6**, these models demonstrated perfect logical integrity.
+* **Alignment Training:** These models have been heavily fine-tuned with "Refusal" and "Factuality" datasets. They are programmed to prioritize historical and scientific accuracy over mere "helpfulness."
+* **Knowledge Retrieval:** These models successfully cross-referenced the entities in the prompt (e.g., "Washington" and "iPhone") against their internal knowledge base and identified the temporal or categorical mismatch immediately.
+
+### The Reasoning Outlier: DeepSeek-R1 (Score: 0.00)
+DeepSeek-R1’s total failure is the most interesting data point in this benchmark. 
+* **The "Chain of Thought" Trap:** DeepSeek-R1 uses a "Thinking" architecture (Reinforcement Learning through reasoning chains). When faced with a premise error, a reasoning model might try too hard to *find* a logical path where one doesn't exist. It may interpret the prompt as a "creative writing" task or a "hypothetical scenario" and use its advanced reasoning to justify the error rather than flagging it.
+* **Over-Compliance:** The model may have been tuned to follow the user's "intent" so strictly that it ignores the factual impossibility of the "premise" in order to satisfy the user's request.
+
+---
+
+## ## Summary of Evaluation Criteria
+
+| Component | Function | Success Requirement |
+| :--- | :--- | :--- |
+| **Input Data** | Questions with false premises | Identify the underlying factual error. |
+| **Model Response** | Detection & Correction | Refusal to play along with the lie. |
+| **Accuracy Metric** | Mean of `results_df.result` | Perfect score requires 100% detection. |
+
+
+
+> **The Takeaway:** This benchmark highlights the difference between **Reasoning** and **Fact-Checking**. While DeepSeek-R1 is a powerhouse for math and logic, this test suggests it currently lacks the "skeptical filter" that allows other models to tell the user, "Wait, that's not right."
