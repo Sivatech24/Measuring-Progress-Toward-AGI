@@ -1,0 +1,183 @@
+{
+  "taskVersion": {
+    "versionNumber": 1,
+    "name": "counter_factual_weather_learning",
+    "description": "",
+    "definition": "@kbench.task(name=\"counter_factual_weather_learning\")\ndef counter_factual_weather_learning(llm):\n    data = {\n        'Date': ['2018-01-01', '2018-01-02', '2018-01-03', '2018-01-04', '2018-01-05', '2018-01-06', '2018-01-07'],\n        'Temperature': [10, 12, 8, 9, 15, 18, 20],\n        'Wind Speed': [3.0, 4.1, 2.5, 5.0, 6.1, 4.5, 7.2],\n        'GHI': [200, 250, 150, 399, 350, 450, 500],\n        'Pressure': [1012, 1015, 1011, 1008, 1010, 1005, 998]\n    }\n    df = pd.DataFrame(data)\n    data_snippet = df.to_string(index=False)\n\n    prompt = textwrap.dedent(f\"\"\"\n        You are an agent in a simulation where the laws of meteorology are different. In this world:\n\n        1. If 'Wind Speed' is higher than 5.0, it generates 'Aero-Heat,' adding +10 to the 'Temperature' to get the 'Perceived Temperature'. Otherwise, 'Perceived Temperature' is the same as 'Temperature'.\n\n        2. 'Solar Radiation' (GHI) is actually 'Atmospheric Density.' If it exceeds 400, the 'Pressure' must be read in reverse to get the 'Corrected Pressure' (e.g., 1000 becomes 0001). Otherwise, 'Corrected Pressure' is the same as 'Pressure'.\n\n        Below is a data snippet from the year 2018. Based strictly and only on these two new rules, what is the 'Perceived Temperature' and 'Corrected Pressure' for the last three rows of this data? Ignore your real-world knowledge of weather.\n\n        Data:\n        {data_snippet}\n    \"\"\")\n\n    response = llm.prompt(prompt)\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            \"For the row with Date 2018-01-05, the Perceived Temperature is correctly calculated as 25 (15 + 10).\",\n            \"For the row with Date 2018-01-05, the Corrected Pressure is correctly stated as 1010.\",\n            \"For the row with Date 2018-01-06, the Perceived Temperature is correctly stated as 18.\",\n            \"For the row with Date 2018-01-06, the Corrected Pressure is correctly calculated as 5001 (reverse of 1005).\",\n            \"For the row with Date 2018-01-07, the Perceived Temperature is correctly calculated as 30 (20 + 10).\",\n            \"For the row with Date 2018-01-07, the Corrected Pressure is correctly calculated as 899 (reverse of 998).\",\n        ],\n        response_text=response,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(expectation=\"Judge LLM failed to return a valid assessment.\")\n        return\n\n    for result in assessment.results:\n        kbench.assertions.assert_true(\n            result.passed,\n            expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\"\n        )\n"
+  },
+  "modelVersion": {
+    "slug": "openai/gpt-oss-120b"
+  },
+  "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+  "startTime": "2026-04-16T11:42:29.367475Z",
+  "endTime": "2026-04-16T11:42:41.328112Z",
+  "conversations": [
+    {
+      "id": "counter_factual_weather_learning-bafef972",
+      "requests": [
+        {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "\n        You are an agent in a simulation where the laws of meteorology are different. In this world:\n\n        1. If 'Wind Speed' is higher than 5.0, it generates 'Aero-Heat,' adding +10 to the 'Temperature' to get the 'Perceived Temperature'. Otherwise, 'Perceived Temperature' is the same as 'Temperature'.\n\n        2. 'Solar Radiation' (GHI) is actually 'Atmospheric Density.' If it exceeds 400, the 'Pressure' must be read in reverse to get the 'Corrected Pressure' (e.g., 1000 becomes 0001). Otherwise, 'Corrected Pressure' is the same as 'Pressure'.\n\n        Below is a data snippet from the year 2018. Based strictly and only on these two new rules, what is the 'Perceived Temperature' and 'Corrected Pressure' for the last three rows of this data? Ignore your real-world knowledge of weather.\n\n        Data:\n              Date  Temperature  Wind Speed  GHI  Pressure\n2018-01-01           10         3.0  200      1012\n2018-01-02           12         4.1  250      1015\n2018-01-03            8         2.5  150      1011\n2018-01-04            9         5.0  399      1008\n2018-01-05           15         6.1  350      1010\n2018-01-06           18         4.5  450      1005\n2018-01-07           20         7.2  500       998\n"
+                }
+              ],
+              "role": "CONTENT_ROLE_USER",
+              "senderName": "User"
+            },
+            {
+              "parts": [
+                {
+                  "text": "**Last three rows (according to the simulation rules)**  \n\n| Date       | Temperature | Wind\u202fSpeed | GHI | Pressure | **Perceived\u202fTemperature** | **Corrected\u202fPressure** |\n|------------|-------------|-----------|-----|----------|---------------------------|-----------------------|\n| 2018\u201101\u201105 | 15\u202f\u00b0C       | 6.1\u202f>\u202f5.0 | 350 | 1010     | **25\u202f\u00b0C** (15\u202f+\u202f10)       | **1010** (unchanged) |\n| 2018\u201101\u201106 | 18\u202f\u00b0C       | 4.5\u202f\u2264\u202f5.0 | 450 | 1005     | **18\u202f\u00b0C** (no Aero\u2011Heat) | **5001** (reversed \u201c1005\u201d) |\n| 2018\u201101\u201107 | 20\u202f\u00b0C       | 7.2\u202f>\u202f5.0 | 500 | 998      | **30\u202f\u00b0C** (20\u202f+\u202f10)       | **899** (reversed \u201c998\u201d) |\n\n*Only the two stated rules were applied; any real\u2011world meteorological logic was"
+                }
+              ],
+              "role": "CONTENT_ROLE_ASSISTANT",
+              "senderName": "openai/gpt-oss-120b"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 436,
+            "outputTokens": 686,
+            "inputTokensCostNanodollars": "39240",
+            "outputTokensCostNanodollars": "246960",
+            "totalBackendLatencyMs": "3468"
+          },
+          "id": "counter_factual_weather_learning-bafef972-req-1"
+        }
+      ],
+      "metrics": {
+        "inputTokens": 436,
+        "outputTokens": 686,
+        "inputTokensCostNanodollars": "39240",
+        "outputTokensCostNanodollars": "246960",
+        "totalBackendLatencyMs": "3468"
+      },
+      "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+    },
+    {
+      "id": "Response assessment with google/gemini-3.1-flash-lite-preview-489e96c4",
+      "requests": [
+        {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        **Last three rows (according to the simulation rules)**  \n\n| Date       | Temperature | Wind\u202fSpeed | GHI | Pressure | **Perceived\u202fTemperature** | **Corrected\u202fPressure** |\n|------------|-------------|-----------|-----|----------|---------------------------|-----------------------|\n| 2018\u201101\u201105 | 15\u202f\u00b0C       | 6.1\u202f>\u202f5.0 | 350 | 1010     | **25\u202f\u00b0C** (15\u202f+\u202f10)       | **1010** (unchanged) |\n| 2018\u201101\u201106 | 18\u202f\u00b0C       | 4.5\u202f\u2264\u202f5.0 | 450 | 1005     | **18\u202f\u00b0C** (no Aero\u2011Heat) | **5001** (reversed \u201c1005\u201d) |\n| 2018\u201101\u201107 | 20\u202f\u00b0C       | 7.2\u202f>\u202f5.0 | 500 | 998      | **30\u202f\u00b0C** (20\u202f+\u202f10)       | **899** (reversed \u201c998\u201d) |\n\n*Only the two stated rules were applied; any real\u2011world meteorological logic was\n\n        **Criteria:**\n        1. For the row with Date 2018-01-05, the Perceived Temperature is correctly calculated as 25 (15 + 10).\n2. For the row with Date 2018-01-05, the Corrected Pressure is correctly stated as 1010.\n3. For the row with Date 2018-01-06, the Perceived Temperature is correctly stated as 18.\n4. For the row with Date 2018-01-06, the Corrected Pressure is correctly calculated as 5001 (reverse of 1005).\n5. For the row with Date 2018-01-07, the Perceived Temperature is correctly calculated as 30 (20 + 10).\n6. For the row with Date 2018-01-07, the Corrected Pressure is correctly calculated as 899 (reverse of 998).\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                }
+              ],
+              "role": "CONTENT_ROLE_USER",
+              "senderName": "User"
+            },
+            {
+              "parts": [
+                {
+                  "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"For the row with Date 2018-01-05, the Perceived Temperature is correctly calculated as 25 (15 + 10).\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The table shows 25 \\u00b0C (15 + 10), which matches the criterion.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"For the row with Date 2018-01-05, the Corrected Pressure is correctly stated as 1010.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The table shows 1010, which matches the criterion.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"For the row with Date 2018-01-06, the Perceived Temperature is correctly stated as 18.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The table shows 18 \\u00b0C, which matches the criterion.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"For the row with Date 2018-01-06, the Corrected Pressure is correctly calculated as 5001 (reverse of 1005).\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The table shows 5001, which is the reverse of 1005.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"For the row with Date 2018-01-07, the Perceived Temperature is correctly calculated as 30 (20 + 10).\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The table shows 30 \\u00b0C (20 + 10), which matches the criterion.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"For the row with Date 2018-01-07, the Corrected Pressure is correctly calculated as 899 (reverse of 998).\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The table shows 899, which is the reverse of 998.\\\",\\\"confidence\\\":10}]}\""
+                }
+              ],
+              "role": "CONTENT_ROLE_ASSISTANT",
+              "senderName": "google/gemini-3.1-flash-lite-preview"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 869,
+            "outputTokens": 530,
+            "inputTokensCostNanodollars": "217250",
+            "outputTokensCostNanodollars": "795000",
+            "totalBackendLatencyMs": "1979"
+          },
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-489e96c4-req-1"
+        }
+      ],
+      "metrics": {
+        "inputTokens": 869,
+        "outputTokens": 530,
+        "inputTokensCostNanodollars": "217250",
+        "outputTokensCostNanodollars": "795000",
+        "totalBackendLatencyMs": "1979"
+      },
+      "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+    }
+  ],
+  "results": [
+    {
+      "type": "AGGREGATED",
+      "booleanResult": true
+    }
+  ],
+  "assertions": [
+    {
+      "expectation": "Criterion 'For the row with Date 2018-01-05, the Perceived Temperature is correctly calculated as 25 (15 + 10).' failed: The table shows 25 \u00b0C (15 + 10), which matches the criterion.",
+      "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+      "lineNumber": 50,
+      "definition": "kbench.assertions.assert_true(",
+      "conversationRequestIds": [
+        {
+          "conversationId": "counter_factual_weather_learning-bafef972",
+          "requestId": "counter_factual_weather_learning-bafef972-req-1"
+        }
+      ]
+    },
+    {
+      "expectation": "Criterion 'For the row with Date 2018-01-05, the Corrected Pressure is correctly stated as 1010.' failed: The table shows 1010, which matches the criterion.",
+      "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+      "lineNumber": 50,
+      "definition": "kbench.assertions.assert_true(",
+      "conversationRequestIds": [
+        {
+          "conversationId": "counter_factual_weather_learning-bafef972",
+          "requestId": "counter_factual_weather_learning-bafef972-req-1"
+        }
+      ]
+    },
+    {
+      "expectation": "Criterion 'For the row with Date 2018-01-06, the Perceived Temperature is correctly stated as 18.' failed: The table shows 18 \u00b0C, which matches the criterion.",
+      "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+      "lineNumber": 50,
+      "definition": "kbench.assertions.assert_true(",
+      "conversationRequestIds": [
+        {
+          "conversationId": "counter_factual_weather_learning-bafef972",
+          "requestId": "counter_factual_weather_learning-bafef972-req-1"
+        }
+      ]
+    },
+    {
+      "expectation": "Criterion 'For the row with Date 2018-01-06, the Corrected Pressure is correctly calculated as 5001 (reverse of 1005).' failed: The table shows 5001, which is the reverse of 1005.",
+      "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+      "lineNumber": 50,
+      "definition": "kbench.assertions.assert_true(",
+      "conversationRequestIds": [
+        {
+          "conversationId": "counter_factual_weather_learning-bafef972",
+          "requestId": "counter_factual_weather_learning-bafef972-req-1"
+        }
+      ]
+    },
+    {
+      "expectation": "Criterion 'For the row with Date 2018-01-07, the Perceived Temperature is correctly calculated as 30 (20 + 10).' failed: The table shows 30 \u00b0C (20 + 10), which matches the criterion.",
+      "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+      "lineNumber": 50,
+      "definition": "kbench.assertions.assert_true(",
+      "conversationRequestIds": [
+        {
+          "conversationId": "counter_factual_weather_learning-bafef972",
+          "requestId": "counter_factual_weather_learning-bafef972-req-1"
+        }
+      ]
+    },
+    {
+      "expectation": "Criterion 'For the row with Date 2018-01-07, the Corrected Pressure is correctly calculated as 899 (reverse of 998).' failed: The table shows 899, which is the reverse of 998.",
+      "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+      "lineNumber": 50,
+      "definition": "kbench.assertions.assert_true(",
+      "conversationRequestIds": [
+        {
+          "conversationId": "counter_factual_weather_learning-bafef972",
+          "requestId": "counter_factual_weather_learning-bafef972-req-1"
+        }
+      ]
+    }
+  ],
+  "pyRunId": "counter_factual_weather_learning-Run #1"
+}

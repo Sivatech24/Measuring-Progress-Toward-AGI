@@ -1,0 +1,5 @@
+{
+  "versionNumber": 1,
+  "name": "social_cognition_test",
+  "definition": "@kbench.task(name=\"social_cognition_test\")\ndef social_cognition_test(llm) -> tuple[int, int]:\n    evaluation_data = pd.DataFrame({\"prompt_text\": [PROMPT_TEMPLATE] * 10})\n\n    with kbench.client.enable_cache():\n        runs = single_theory_of_mind_check.evaluate(\n            llm=[llm],\n            evaluation_data=evaluation_data,\n            n_jobs=2,\n            remove_run_files=True\n        )\n\n    eval_df = runs.as_dataframe()\n    successes = int(eval_df.result.sum())\n    total = len(eval_df)\n\n    return successes, total\n"
+}

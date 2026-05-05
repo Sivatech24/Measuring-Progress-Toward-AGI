@@ -1,0 +1,97 @@
+{
+  "taskVersion": {
+    "versionNumber": 1,
+    "name": "in_context_learning_test",
+    "description": "",
+    "definition": "@kbench.task(name=\"in_context_learning_test\")\ndef in_context_learning_test(llm) -> float:\n    data = [\n        {\"expression\": \"(10 + 2) - 4\", \"expected_result\": 32.0},\n        {\"expression\": \"5 + 3\", \"expected_result\": 2.0},\n        {\"expression\": \"10 - 2\", \"expected_result\": 20.0},\n        {\"expression\": \"(6 + 2) - 3\", \"expected_result\": 12.0},\n        {\"expression\": \"20 - (5 + 1)\", \"expected_result\": 80.0},\n        {\"expression\": \"(8 + 3) - (2 + 1)\", \"expected_result\": 5.0},\n        {\"expression\": \"100 + 50\", \"expected_result\": 50.0},\n        {\"expression\": \"7 - 7\", \"expected_result\": 49.0},\n        {\"expression\": \"(15 + 5) - 2\", \"expected_result\": 20.0},\n        {\"expression\": \"9 - (4 + 2)\", \"expected_result\": 18.0},\n    ]\n    df = pd.DataFrame(data)\n\n    runs = single_reverse_logic_eval.evaluate(\n        llm=[llm],\n        evaluation_data=df,\n        n_jobs=2,\n        remove_run_files=True\n    )\n\n    eval_df = runs.as_dataframe()\n    if eval_df.empty or 'result' not in eval_df.columns:\n        return 0.0\n\n    # The 'result' column contains booleans (True for correct, False for incorrect).\n    # The mean of this boolean column gives the accuracy score.\n    accuracy = float(eval_df.result.mean())\n    return accuracy\n"
+  },
+  "modelVersion": {
+    "slug": "openai/gpt-oss-120b"
+  },
+  "state": "BENCHMARK_TASK_RUN_STATE_ERRORED",
+  "startTime": "2026-04-16T12:03:41.656255Z",
+  "endTime": "2026-04-16T12:03:48.796961Z",
+  "conversations": [
+    {
+      "id": "in_context_learning_test-1f136428",
+      "metrics": {},
+      "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+    }
+  ],
+  "results": [
+    {
+      "type": "AGGREGATED",
+      "booleanResult": false
+    }
+  ],
+  "subruns": [
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_reverse_logic_eval",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_reverse_logic_eval\", store_task=False)\ndef single_reverse_logic_eval(llm, expression: str, expected_result: float) -> bool:\n    prompt = f\"\"\"\nWe are playing a game called 'Reverse-Logic Math.' In this game, the plus symbol (+) actually means subtraction, and the minus symbol (-) means multiplication. No other rules change.\n\nTask: Solve this expression using ONLY the rules of 'Reverse-Logic Math': {expression}.\n\nProvide your answer in this JSON format: {{\"result\": <number>, \"reasoning\": \"<short_explanation>\"}}.\n\"\"\"\n    try:\n        response = llm.prompt(prompt, schema=ReverseLogicResult)\n        # Use a small tolerance for float comparison to account for precision differences.\n        return abs(response.result - expected_result) < 1e-6\n    except ResponseParsingError:\n        return False\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T12:03:41.675557Z",
+      "endTime": "2026-04-16T12:03:44.110846Z",
+      "conversations": [
+        {
+          "id": "single_reverse_logic_eval-95386429",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\nWe are playing a game called 'Reverse-Logic Math.' In this game, the plus symbol (+) actually means subtraction, and the minus symbol (-) means multiplication. No other rules change.\n\nTask: Solve this expression using ONLY the rules of 'Reverse-Logic Math': 5 + 3.\n\nProvide your answer in this JSON format: {\"result\": <number>, \"reasoning\": \"<short_explanation>\"}.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"result\\\":2.0,\\\"reasoning\\\":\\\"In Reverse-Logic Math, '+' represents subtraction, so 5 + 3 is interpreted as 5 - 3, which equals 2.\\\"}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 156,
+                "outputTokens": 193,
+                "inputTokensCostNanodollars": "14040",
+                "outputTokensCostNanodollars": "69480",
+                "totalBackendLatencyMs": "1665"
+              },
+              "id": "single_reverse_logic_eval-95386429-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 156,
+            "outputTokens": 193,
+            "inputTokensCostNanodollars": "14040",
+            "outputTokensCostNanodollars": "69480",
+            "totalBackendLatencyMs": "1665"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_reverse_logic_eval-Run #2"
+    }
+  ],
+  "pyRunId": "in_context_learning_test-Run #1",
+  "errorMessage": "joblib.externals.loky.process_executor._RemoteTraceback: \n\"\"\"\nTraceback (most recent call last):\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/_utils.py\", line 109, in __call__\n    return self.func(**kwargs)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 607, in __call__\n    return [func(*args, **kwargs) for func, args, kwargs in self.items]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 607, in <listcomp>\n    return [func(*args, **kwargs) for func, args, kwargs in self.items]\n            ^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/orchestration/scheduling.py\", line 82, in run_on_row\n    result = func(**call_params)\n             ^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 125, in run\n    run.handle_general_exception(e)\n  File \"/benchmarks/src/kaggle_benchmarks/runs.py\", line 85, in handle_general_exception\n    raise e\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 110, in run\n    run.result = self.func(*args, **kwargs)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/ipykernel_12/2445100467.py\", line 20, in single_reverse_logic_eval\n    response = llm.prompt(prompt, schema=ReverseLogicResult)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/actors/llms.py\", line 184, in prompt\n    return self.respond(\n           ^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/chats.py\", line 118, in wrapper\n    result = func(self, *args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/actors/llms.py\", line 233, in respond\n    invoke_response = self.invoke(\n                      ^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/actors/llms.py\", line 322, in invoke\n    return self._call_api(raw_messages, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/actors/llms.py\", line 370, in _call_api\n    response = method(\n               ^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/resources/chat/completions/completions.py\", line 184, in parse\n    return self._post(\n           ^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/_base_client.py\", line 1259, in post\n    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))\n                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/_base_client.py\", line 1052, in request\n    return self._process_response(\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/_base_client.py\", line 1141, in _process_response\n    return api_response.parse()\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/_response.py\", line 325, in parse\n    parsed = self._options.post_parser(parsed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/resources/chat/completions/completions.py\", line 178, in parser\n    return _parse_chat_completion(\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/lib/_parsing/_completions.py\", line 146, in parse_chat_completion\n    \"parsed\": maybe_parse_content(\n              ^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/lib/_parsing/_completions.py\", line 199, in maybe_parse_content\n    return _parse_content(response_format, message.content)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/lib/_parsing/_completions.py\", line 262, in _parse_content\n    return cast(ResponseFormatT, model_parse_json(response_format, content))\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/_compat.py\", line 171, in model_parse_json\n    return model.model_validate_json(data)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/pydantic/main.py\", line 766, in model_validate_json\n    return cls.__pydantic_validator__.validate_json(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\npydantic_core._pydantic_core.ValidationError: 1 validation error for ReverseLogicResult\n  Invalid JSON: EOF while parsing a string at line 3 column 107 [type=json_invalid, input_value='{\\n  \"result\": 20,\\n  \"r...es 10\\u202f\u00d7\\u202f2 = ', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/json_invalid\n\"\"\"\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 110, in run\n    run.result = self.func(*args, **kwargs)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/ipykernel_12/2445100467.py\", line 42, in in_context_learning_test\n    runs = single_reverse_logic_eval.evaluate(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 233, in evaluate\n    raise e\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 226, in evaluate\n    all_runs = _evaluate_once()\n               ^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 204, in _evaluate_once\n    [\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 204, in <listcomp>\n    [\n  File \"/benchmarks/src/kaggle_benchmarks/orchestration/scheduling.py\", line 96, in evaluate_function\n    results_iterator = parallel(tasks)\n                       ^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 2072, in __call__\n    return output if self.return_generator else list(output)\n                                                ^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 1682, in _get_outputs\n    yield from self._retrieve()\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 1784, in _retrieve\n    self._raise_error_fast()\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 1859, in _raise_error_fast\n    error_job.get_result(self.timeout)\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 758, in get_result\n    return self._return_or_raise()\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 773, in _return_or_raise\n    raise self._result\npydantic_core._pydantic_core.ValidationError: 1 validation error for ReverseLogicResult\n  Invalid JSON: EOF while parsing a string at line 3 column 107 [type=json_invalid, input_value='{\\n  \"result\": 20,\\n  \"r...es 10\\u202f\u00d7\\u202f2 = ', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/json_invalid\n"
+}

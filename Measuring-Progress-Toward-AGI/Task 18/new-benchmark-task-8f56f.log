@@ -1,0 +1,18 @@
+[{"stream_name":"stderr","time":20.906650901,"data":"WARNING:root:An error occurred during evaluation attempt 1: 1 validation error for TheoryOfMindResponse\n"}
+,{"stream_name":"stderr","time":20.906750491,"data":"  Invalid JSON: EOF while parsing an object at line 1 column 334 [type=json_invalid, input_value='{\"maria_belief\": \"Sarah ...s created for Sarah.\"', input_type=str]\n"}
+,{"stream_name":"stderr","time":20.906756031,"data":"    For further information visit https://errors.pydantic.dev/2.12/v/json_invalid\n"}
+,{"stream_name":"stderr","time":20.906758421,"data":"\n"}
+,{"stream_name":"stderr","time":20.906760751,"data":"WARNING:root:An error occurred during evaluation attempt 1: 1 validation error for TheoryOfMindResponse\n"}
+,{"stream_name":"stderr","time":20.906762921,"data":"  Invalid JSON: EOF while parsing an object at line 1 column 334 [type=json_invalid, input_value='{\"maria_belief\": \"Sarah ...s created for Sarah.\"', input_type=str]\n"}
+,{"stream_name":"stderr","time":20.906765341,"data":"    For further information visit https://errors.pydantic.dev/2.12/v/json_invalid\n"}
+,{"stream_name":"stderr","time":26.424744731,"data":"/benchmarks/.venv/lib/python3.11/site-packages/traitlets/traitlets.py:2930: FutureWarning: --Exporter.preprocessors=[\"remove_papermill_header.RemovePapermillHeader\"] for containers is deprecated in traitlets 5.0. You can pass `--Exporter.preprocessors item` ... multiple times to add items to a list.\n"}
+,{"stream_name":"stderr","time":26.424817941,"data":"  warn(\n"}
+,{"stream_name":"stderr","time":26.442986508,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to notebook\n"}
+,{"stream_name":"stderr","time":26.710387998,"data":"[NbConvertApp] Writing 146097 bytes to __notebook__.ipynb\n"}
+,{"stream_name":"stderr","time":28.931490102,"data":"/benchmarks/.venv/lib/python3.11/site-packages/traitlets/traitlets.py:2930: FutureWarning: --Exporter.preprocessors=[\"nbconvert.preprocessors.ExtractOutputPreprocessor\"] for containers is deprecated in traitlets 5.0. You can pass `--Exporter.preprocessors item` ... multiple times to add items to a list.\n"}
+,{"stream_name":"stderr","time":28.931534082,"data":"  warn(\n"}
+,{"stream_name":"stderr","time":28.950841013,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to html\n"}
+,{"stream_name":"stderr","time":29.663014876,"data":"/benchmarks/.venv/share/jupyter/nbconvert/templates/base/display_priority.j2:32: UserWarning: Your element with mimetype(s) dict_keys([]) is not able to be represented.\n"}
+,{"stream_name":"stderr","time":29.663062596,"data":"  {%- elif type == 'text/vnd.mermaid' -%}\n"}
+,{"stream_name":"stderr","time":29.687850524,"data":"[NbConvertApp] Writing 383660 bytes to __results__.html\n"}
+]

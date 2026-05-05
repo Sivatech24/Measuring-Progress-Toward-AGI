@@ -1,0 +1,28 @@
+[{"stream_name":"stderr","time":12.672997789,"data":"/tmp/ipykernel_12/1927226880.py:36: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value 'N/A' has dtype incompatible with int64, please explicitly cast to a compatible dtype first.\n"}
+,{"stream_name":"stderr","time":12.673156889,"data":"  df2.loc[1, 'Clearsky DNI'] = 'N/A'\n"}
+,{"stream_name":"stderr","time":12.673176518,"data":"/tmp/ipykernel_12/1927226880.py:46: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value 'N/A' has dtype incompatible with int64, please explicitly cast to a compatible dtype first.\n"}
+,{"stream_name":"stderr","time":12.673181198,"data":"  df4.loc[3, 'Clearsky DNI'] = 'N/A'\n"}
+,{"stream_name":"stderr","time":12.673183798,"data":"/tmp/ipykernel_12/1927226880.py:60: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value 'N/A' has dtype incompatible with int64, please explicitly cast to a compatible dtype first.\n"}
+,{"stream_name":"stderr","time":12.673186338,"data":"  df7.loc[4, 'Clearsky DNI'] = 'N/A'\n"}
+,{"stream_name":"stderr","time":12.673188218,"data":"/tmp/ipykernel_12/1927226880.py:66: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value 'N/A' has dtype incompatible with int64, please explicitly cast to a compatible dtype first.\n"}
+,{"stream_name":"stderr","time":12.673190489,"data":"  df8.loc[4, 'Clearsky DNI'] = 'N/A'\n"}
+,{"stream_name":"stderr","time":12.673192449,"data":"\n"}
+,{"stream_name":"stderr","time":12.673194618,"data":"/tmp/ipykernel_12/1927226880.py:36: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value 'N/A' has dtype incompatible with int64, please explicitly cast to a compatible dtype first.\n"}
+,{"stream_name":"stderr","time":12.673196929,"data":"  df2.loc[1, 'Clearsky DNI'] = 'N/A'\n"}
+,{"stream_name":"stderr","time":12.673198929,"data":"/tmp/ipykernel_12/1927226880.py:46: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value 'N/A' has dtype incompatible with int64, please explicitly cast to a compatible dtype first.\n"}
+,{"stream_name":"stderr","time":12.673201269,"data":"  df4.loc[3, 'Clearsky DNI'] = 'N/A'\n"}
+,{"stream_name":"stderr","time":12.673203189,"data":"/tmp/ipykernel_12/1927226880.py:60: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value 'N/A' has dtype incompatible with int64, please explicitly cast to a compatible dtype first.\n"}
+,{"stream_name":"stderr","time":12.673210309,"data":"  df7.loc[4, 'Clearsky DNI'] = 'N/A'\n"}
+,{"stream_name":"stderr","time":12.673212278,"data":"/tmp/ipykernel_12/1927226880.py:66: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value 'N/A' has dtype incompatible with int64, please explicitly cast to a compatible dtype first.\n"}
+,{"stream_name":"stderr","time":12.673214518,"data":"  df8.loc[4, 'Clearsky DNI'] = 'N/A'\n"}
+,{"stream_name":"stderr","time":22.908492168,"data":"/benchmarks/.venv/lib/python3.11/site-packages/traitlets/traitlets.py:2930: FutureWarning: --Exporter.preprocessors=[\"remove_papermill_header.RemovePapermillHeader\"] for containers is deprecated in traitlets 5.0. You can pass `--Exporter.preprocessors item` ... multiple times to add items to a list.\n"}
+,{"stream_name":"stderr","time":22.908547248,"data":"  warn(\n"}
+,{"stream_name":"stderr","time":22.929368483,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to notebook\n"}
+,{"stream_name":"stderr","time":23.253247213,"data":"[NbConvertApp] Writing 774039 bytes to __notebook__.ipynb\n"}
+,{"stream_name":"stderr","time":26.035667666,"data":"/benchmarks/.venv/lib/python3.11/site-packages/traitlets/traitlets.py:2930: FutureWarning: --Exporter.preprocessors=[\"nbconvert.preprocessors.ExtractOutputPreprocessor\"] for containers is deprecated in traitlets 5.0. You can pass `--Exporter.preprocessors item` ... multiple times to add items to a list.\n"}
+,{"stream_name":"stderr","time":26.035738946,"data":"  warn(\n"}
+,{"stream_name":"stderr","time":26.058249661,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to html\n"}
+,{"stream_name":"stderr","time":26.959037166,"data":"/benchmarks/.venv/share/jupyter/nbconvert/templates/base/display_priority.j2:32: UserWarning: Your element with mimetype(s) dict_keys([]) is not able to be represented.\n"}
+,{"stream_name":"stderr","time":26.959071306,"data":"  {%- elif type == 'text/vnd.mermaid' -%}\n"}
+,{"stream_name":"stderr","time":27.004966887,"data":"[NbConvertApp] Writing 970244 bytes to __results__.html\n"}
+]
