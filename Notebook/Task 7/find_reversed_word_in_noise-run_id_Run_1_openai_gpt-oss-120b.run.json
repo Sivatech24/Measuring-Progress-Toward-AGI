@@ -1,0 +1,613 @@
+{
+  "taskVersion": {
+    "versionNumber": 1,
+    "name": "find_reversed_word_in_noise",
+    "description": "",
+    "definition": "@kbench.task(name=\"find_reversed_word_in_noise\")\ndef find_reversed_word_in_noise(llm) -> float:\n    words_to_find = [\n        \"COMPUTER\", \"PYTHON\", \"KAGGLE\", \"BENCHMARK\", \"EVALUATE\",\n        \"SEQUENCE\", \"LIBRARY\", \"FRAMEWORK\", \"ANALYSIS\", \"INSIGHT\"\n    ]\n\n    eval_data = []\n    for word in words_to_find:\n        data_block, answer = generate_noisy_data(word)\n        eval_data.append({\"data_block\": data_block, \"answer\": answer})\n\n    df = pd.DataFrame(eval_data)\n\n    with kbench.client.enable_cache():\n        runs = find_reversed_word_single.evaluate(\n            llm=[llm],\n            evaluation_data=df,\n            n_jobs=2,\n            remove_run_files=True\n        )\n\n    eval_df = runs.as_dataframe()\n    if eval_df.empty or 'result' not in eval_df.columns:\n        return 0.0\n\n    accuracy = float(eval_df.result.mean())\n    return accuracy\n"
+  },
+  "modelVersion": {
+    "slug": "openai/gpt-oss-120b"
+  },
+  "state": "BENCHMARK_TASK_RUN_STATE_ERRORED",
+  "startTime": "2026-04-16T11:26:57.138608Z",
+  "endTime": "2026-04-16T11:48:07.370166Z",
+  "conversations": [
+    {
+      "id": "find_reversed_word_in_noise-ffb4bb0b",
+      "metrics": {},
+      "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+    }
+  ],
+  "results": [
+    {
+      "type": "AGGREGATED",
+      "booleanResult": false
+    }
+  ],
+  "subruns": [
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "find_reversed_word_single",
+        "description": "",
+        "definition": "@kbench.task(name=\"find_reversed_word_single\", store_task=False)\ndef find_reversed_word_single(llm, data_block: str, answer: str) -> bool:\n    prompt = f\"\"\"Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [{data_block}]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word.\"\"\"\n\n    response = llm.prompt(prompt)\n    return answer.lower() in response.lower()\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:26:57.164417Z",
+      "endTime": "2026-04-16T11:27:04.503710Z",
+      "conversations": [
+        {
+          "id": "find_reversed_word_single-58de5eae",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [bpSxU, yceeU3k, 129K8DZf, NOHTYP, fwmpeJ, 6KowB, DmnOcgE, CGEZnQJ, fw4kt, iuit3Bq, CeVAOufT, YNrbJ, 1qp9Ms, LoemT, Wpe05p, ciyc6tMV, VGssm, Gt1aYR, Um2Dkc, 0MkDR, iLExb, qiF0xhb, ISVXMBE1, qwS0yfz, uEbPy1, jmeu1YC, waT4n0k, eO7SsH0d, XEZIXki, 8Xnzf8cj, ujTD5At5, miF7H, jUPyq, uSbcuT7V, sxU8DGBT, aUTj7xC, 5cEWHiA, Mp2iEQN, IrcDx1H, pjJnCC, lTmMwb, sFraKhR, NDS2t, lVNVUF0, ReRF7VY, ArZSB, xgnPuBod, Js68a, 7fs9kCua, rcwiae]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "PY"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 407,
+                "outputTokens": 498,
+                "inputTokensCostNanodollars": "36630",
+                "outputTokensCostNanodollars": "179280",
+                "totalBackendLatencyMs": "6341"
+              },
+              "id": "find_reversed_word_single-58de5eae-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 407,
+            "outputTokens": 498,
+            "inputTokensCostNanodollars": "36630",
+            "outputTokensCostNanodollars": "179280",
+            "totalBackendLatencyMs": "6341"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "pyRunId": "find_reversed_word_single-Run #2"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "find_reversed_word_single",
+        "description": "",
+        "definition": "@kbench.task(name=\"find_reversed_word_single\", store_task=False)\ndef find_reversed_word_single(llm, data_block: str, answer: str) -> bool:\n    prompt = f\"\"\"Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [{data_block}]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word.\"\"\"\n\n    response = llm.prompt(prompt)\n    return answer.lower() in response.lower()\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:26:57.163240Z",
+      "endTime": "2026-04-16T11:27:08.092576Z",
+      "conversations": [
+        {
+          "id": "find_reversed_word_single-24c3ca3d",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [IFBC8J, lxIjd, 8Dg5ndOz, qc2002, WNMYgM1G, 5hVVkGC4, mDXBHDo, 4qQC2, 9LlWsep, 9IG0h, 0YgN1d7s, SVOfL, x28hM, lTOcDEx, faU4gJs, gqueFTqQ, ywMKfiUJ, laoCS, 91O1Z, rRUALt, CA6lyB, 925xtA, hYbMPFf, ywoTpj, nTYjJ0, RETUPMOC, hYwcyTw, 9KzcgwEd, zWbnVs, M3dAKJ, PqZhJ, RjFAh8Jv, 4Dhocl, hRfMfDpk, pAfCs7, 1Addo1x, yClgX, xfPz74kH, cQcB1XqH, mTZctTic, mlkaOEe, lJdbRz, mmb8NK6, I3ztgyww, OWVS1si0, PcLvtP2, XtHVQ8, efiZeWNn, JFVou1f, 2JCw5]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "COM"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 418,
+                "outputTokens": 592,
+                "inputTokensCostNanodollars": "37620",
+                "outputTokensCostNanodollars": "213120",
+                "totalBackendLatencyMs": "9914"
+              },
+              "id": "find_reversed_word_single-24c3ca3d-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 418,
+            "outputTokens": 592,
+            "inputTokensCostNanodollars": "37620",
+            "outputTokensCostNanodollars": "213120",
+            "totalBackendLatencyMs": "9914"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "pyRunId": "find_reversed_word_single-Run #1"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "find_reversed_word_single",
+        "description": "",
+        "definition": "@kbench.task(name=\"find_reversed_word_single\", store_task=False)\ndef find_reversed_word_single(llm, data_block: str, answer: str) -> bool:\n    prompt = f\"\"\"Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [{data_block}]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word.\"\"\"\n\n    response = llm.prompt(prompt)\n    return answer.lower() in response.lower()\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:27:08.094626Z",
+      "endTime": "2026-04-16T11:27:34.693258Z",
+      "conversations": [
+        {
+          "id": "find_reversed_word_single-e5ac8d9a",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [nVizK, V0BkiHQU, CPURtEy, MyiwEO, 9DIFqoYm, ZQkTRh, mp7qVWM, 4dYXz5P, 1qJib, NmeLlfc, 8byD9, f3gMw84, hhZX5S1, Sgdxzl, KRec5EO, s8G9R, tnCulvRB, 1Ei6SJ, KUzsH, q1YBxR, 9jI9g, j1uYHTA, x7IKoL, ApvhH8q, gRUTkG, iTohho, cPr4G9, 5VdZaP, GmHbF, GzfzO, QirttLg, Q5Bdt7, 6rhEJSM, jTPbzNSd, YoQ5Gn9, EPe3xVg, yyAfKn, gcN10, JhlbTI, SmcNH, OTRHB9, 93qK3huJ, BZEyIxqt, zqn5c7x, KRAMHCNEB, o61Czbv, MndG5, qGwfj95c, LrVq4i, lrKA48]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "BEN"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 414,
+                "outputTokens": 1484,
+                "inputTokensCostNanodollars": "37260",
+                "outputTokensCostNanodollars": "534240",
+                "totalBackendLatencyMs": "24251"
+              },
+              "id": "find_reversed_word_single-e5ac8d9a-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 414,
+            "outputTokens": 1484,
+            "inputTokensCostNanodollars": "37260",
+            "outputTokensCostNanodollars": "534240",
+            "totalBackendLatencyMs": "24251"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "pyRunId": "find_reversed_word_single-Run #4"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "find_reversed_word_single",
+        "description": "",
+        "definition": "@kbench.task(name=\"find_reversed_word_single\", store_task=False)\ndef find_reversed_word_single(llm, data_block: str, answer: str) -> bool:\n    prompt = f\"\"\"Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [{data_block}]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word.\"\"\"\n\n    response = llm.prompt(prompt)\n    return answer.lower() in response.lower()\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:27:04.505792Z",
+      "endTime": "2026-04-16T11:29:23.140042Z",
+      "conversations": [
+        {
+          "id": "find_reversed_word_single-baa974e4",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [2IT9n5Jf, 59Pwzrw, NhGVEX, wzot4Qv, Rk7fjIwy, nNpWBTN, u8p02HUc, 2nn2J, QVRJGT, Xo39HvQ, A8n6B4, SovVec, pyfWnYk, BAKqf7Q0, CpP3It5, Zt2ZKu, ZS9Pb, g8DsJBxb, ELGGAK, EmRbVEP, tYIrj, Hb6DES, pKsnXl, f0ZR7, yTggOW, WvnN8h9, sokCrNk, UnIQbXo9, FqVLQ, YQ4k3, 4K3upjc, Jcl83, nGdGz8t, jAlefuq, NZDwdFc, 3JmWZ9D, ZvO6wBD, 4uzDn, ByiD5R, 1V5YlJm, iWBt3ojD, J2YX5, mKsJGr, 7SQnP5, DLW8o, ZjAXodi, hfJFo, 2HHAgGgn, 2odyf33, rghM1]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": " R n u n Q X"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {},
+              "id": "find_reversed_word_single-baa974e4-req-1"
+            }
+          ],
+          "metrics": {},
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "pyRunId": "find_reversed_word_single-Run #3"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "find_reversed_word_single",
+        "description": "",
+        "definition": "@kbench.task(name=\"find_reversed_word_single\", store_task=False)\ndef find_reversed_word_single(llm, data_block: str, answer: str) -> bool:\n    prompt = f\"\"\"Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [{data_block}]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word.\"\"\"\n\n    response = llm.prompt(prompt)\n    return answer.lower() in response.lower()\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:29:23.142090Z",
+      "endTime": "2026-04-16T11:29:38.497781Z",
+      "conversations": [
+        {
+          "id": "find_reversed_word_single-1aec5281",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [xd6vV0w, 40BROr, ndMtgwd, XwLbX, yckOwyYY, b1IrloL, h8AA7, flnYZy3, rRUUKHVx, oNMTm, xgmD2y6, UJE7WyRq, uiC3dvGA, o2tvOgO, nktUUexR, fvENP, 3C7JN, wf7J6XeG, VXb5PAhJ, YjiUE2k9, CsinmrVb, MTAyBO4V, bi2jMvZ, N2KFN, nu9Fl, TnkDrAJ, x4QMHE5C, 538qS, LqzBs, 0l7WX, sd0IVQI7, 9PHJVyu, ii7Vm2lW, V3ZOw, VIgH3Qm, 8Z371PC, nMapw2x, YSe9zLB, gIzr0vv, FnwvjkDR, HwqRF, lq1ctniL, 9ObErGAw, ZczNZPCV, B8BhHOrN, ECNEUQES, hVnDpd6, Vf61lcC, E9NmQM, jlxNZeAB]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "SE"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 419,
+                "outputTokens": 1637,
+                "inputTokensCostNanodollars": "37710",
+                "outputTokensCostNanodollars": "589320",
+                "totalBackendLatencyMs": "12975"
+              },
+              "id": "find_reversed_word_single-1aec5281-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 419,
+            "outputTokens": 1637,
+            "inputTokensCostNanodollars": "37710",
+            "outputTokensCostNanodollars": "589320",
+            "totalBackendLatencyMs": "12975"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "pyRunId": "find_reversed_word_single-Run #6"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "find_reversed_word_single",
+        "description": "",
+        "definition": "@kbench.task(name=\"find_reversed_word_single\", store_task=False)\ndef find_reversed_word_single(llm, data_block: str, answer: str) -> bool:\n    prompt = f\"\"\"Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [{data_block}]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word.\"\"\"\n\n    response = llm.prompt(prompt)\n    return answer.lower() in response.lower()\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:29:38.499318Z",
+      "endTime": "2026-04-16T11:30:00.247433Z",
+      "conversations": [
+        {
+          "id": "find_reversed_word_single-c5be1238",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [vN1sGEB, MrEPu, U49iLY9, NrCJH, niqgj, pCPgu, e0sgc, 6b86uVfs, TNnnVP, XyeFbR, OzUQleA, LuxSt, r7SSYy, nP6vUIG, M4683j, 9eFcoxs, npyX5Bl6, wNY2A, LyFKdyH, 7P9WYJU, 9ujmS, kc40kLQU, QvCD3A, g0qDM6, 1FItUK, VWeLA, FvuCH8Oz, 7YKbIa9, lVAjhOc, vDKTZtQ, 9RY7nZX, 0LnLbg, 4ls3nXy, LpJEK, iXzXxwqZ, hhJJOuK, svtUn6B, bei1D, KrrU1HQ, ZLsnmLUk, Jgbg0, YRARBIL, ptqabh, Zmvj5, 3RVJlTBc, 4SeYwI, BPlu3Zfq, 8Yo4T, UZyTr16, 4KNcu]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "LIB"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 413,
+                "outputTokens": 935,
+                "inputTokensCostNanodollars": "37170",
+                "outputTokensCostNanodollars": "336600",
+                "totalBackendLatencyMs": "6861"
+              },
+              "id": "find_reversed_word_single-c5be1238-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 413,
+            "outputTokens": 935,
+            "inputTokensCostNanodollars": "37170",
+            "outputTokensCostNanodollars": "336600",
+            "totalBackendLatencyMs": "6861"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "pyRunId": "find_reversed_word_single-Run #7"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "find_reversed_word_single",
+        "description": "",
+        "definition": "@kbench.task(name=\"find_reversed_word_single\", store_task=False)\ndef find_reversed_word_single(llm, data_block: str, answer: str) -> bool:\n    prompt = f\"\"\"Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [{data_block}]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word.\"\"\"\n\n    response = llm.prompt(prompt)\n    return answer.lower() in response.lower()\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:30:00.249530Z",
+      "endTime": "2026-04-16T11:30:05.965767Z",
+      "conversations": [
+        {
+          "id": "find_reversed_word_single-01c79dc9",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [nILAxH, U7kof, quk1JO, R476m3k, WxhESn, 9aaM5RK, i02m2VTm, 2LQaJ, JGwQNF, ZPvudV, eAI3Pys, wLyiST, RZqWHYN, KROWEMARF, 9ZtXLH, a9twZshU, TSCOwe, W5laMaI, 7RhSl, ftucs, O5L1UW, MMZO4Y8, UMspXWso, 2mACsiR, iDEXDN, qXBNYD, 70ptC, ET3I7Vzn, b8cDNUm, cRHNnr, 5aq4Zk, zPyyYVC, u2DJz6vM, qxxZ4wo, CRbr9, osvfkZM8, Jqw00V7, zQrU0, NLuexy8r, SZT5ugB, l3Bng, 8rz4X3MT, k2gAAD4q, XXaT5l, p6H8Tc, mnWX732e, oVAeInw0, boSVB, HgyVkWms, 4X8VgIA]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "FRAME"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 415,
+                "outputTokens": 527,
+                "inputTokensCostNanodollars": "37350",
+                "outputTokensCostNanodollars": "189720",
+                "totalBackendLatencyMs": "3378"
+              },
+              "id": "find_reversed_word_single-01c79dc9-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 415,
+            "outputTokens": 527,
+            "inputTokensCostNanodollars": "37350",
+            "outputTokensCostNanodollars": "189720",
+            "totalBackendLatencyMs": "3378"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "pyRunId": "find_reversed_word_single-Run #8"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "find_reversed_word_single",
+        "description": "",
+        "definition": "@kbench.task(name=\"find_reversed_word_single\", store_task=False)\ndef find_reversed_word_single(llm, data_block: str, answer: str) -> bool:\n    prompt = f\"\"\"Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [{data_block}]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word.\"\"\"\n\n    response = llm.prompt(prompt)\n    return answer.lower() in response.lower()\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:30:05.967605Z",
+      "endTime": "2026-04-16T11:30:15.016222Z",
+      "conversations": [
+        {
+          "id": "find_reversed_word_single-2b4a02dc",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [Zej8EhH, MD2IK, FJEly, 873qbdsl, Q4bsgXw3, snfBJHF, uzeqZcF, V1o909, Qwelle, Ed7KV, 38BWW, pm0aWg, ZIUWJ, ygU425, jCSoD, GWqkaJw, vUVFI8, g8fiV5, BnmoGJ, wdj6wPe1, GazVcd, zScotK, PMhmS0w, eUnMM, tB7Teq, XmtM1, SISYLANA, uegdbb, R2w7LQky, IYsAXxl, 42SHn6e, 5q4X4qN, wyr2WspJ, G1Qe1iG, Qqu7V2, 4ww1ir, owjOPob, 65q1fKj, Jek65y72, QJjlxP01, Y8TfK, HxVXZx, OOUdrWe0, wHUqkQF, V5r85T, naY94UA, 1nX3nM, BULvN, nQxSp, 0GcZutE]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "AN"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 412,
+                "outputTokens": 215,
+                "inputTokensCostNanodollars": "37080",
+                "outputTokensCostNanodollars": "77400",
+                "totalBackendLatencyMs": "2418"
+              },
+              "id": "find_reversed_word_single-2b4a02dc-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 412,
+            "outputTokens": 215,
+            "inputTokensCostNanodollars": "37080",
+            "outputTokensCostNanodollars": "77400",
+            "totalBackendLatencyMs": "2418"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "pyRunId": "find_reversed_word_single-Run #9"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "find_reversed_word_single",
+        "description": "",
+        "definition": "@kbench.task(name=\"find_reversed_word_single\", store_task=False)\ndef find_reversed_word_single(llm, data_block: str, answer: str) -> bool:\n    prompt = f\"\"\"Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [{data_block}]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word.\"\"\"\n\n    response = llm.prompt(prompt)\n    return answer.lower() in response.lower()\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:30:15.018211Z",
+      "endTime": "2026-04-16T11:30:20.365798Z",
+      "conversations": [
+        {
+          "id": "find_reversed_word_single-d20e0a80",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Below is a jumbled sequence of 50 random alphanumeric strings. Within this data, there is one English word spelled backwards.\n\nData Block: [yAVrDw, LpQkq, QH1Ba, LStUdRV, LwVsc, HRKnjyf, Zig0SLyJ, HtWkC, 8e9i8Maz, aaL3AFKQ, HRfF3, GMcigS, sT4WzpQt, 3VCwBJd, D57u6iwY, WMvReRp, 9pSwOba, luK1LI7X, THGISNI, aJMwz0L, AdUi4, S9NZAEak, pHklE2, yLIc6, 9PpSBikV, h8gd64Kw, eW7UmWn, Mb7p1, rrQFLPh, MBZ9vs, 6CjswYDS, ToJiyV, Mz987fS, Tg417Dw, bUpN5, LiOIf, gksg4, 19veMht, Dj8blbyk, wPnbX, sPdb0l, 86o8yh, 6UjShK, oXniYnD, NZyeB, 1rueXz, Nym9A, 9DSydLSh, R6ISu0m, 6mZen4]\n\nTask: Find the English word hidden in the sequence, reverse it to its original spelling, and output only that word."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "INS"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 416,
+                "outputTokens": 516,
+                "inputTokensCostNanodollars": "37440",
+                "outputTokensCostNanodollars": "185760",
+                "totalBackendLatencyMs": "5279"
+              },
+              "id": "find_reversed_word_single-d20e0a80-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 416,
+            "outputTokens": 516,
+            "inputTokensCostNanodollars": "37440",
+            "outputTokensCostNanodollars": "185760",
+            "totalBackendLatencyMs": "5279"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "pyRunId": "find_reversed_word_single-Run #10"
+    }
+  ],
+  "pyRunId": "find_reversed_word_in_noise-Run #1",
+  "errorMessage": "joblib.externals.loky.process_executor._RemoteTraceback: \n\"\"\"\nTraceback (most recent call last):\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/httpx/_transports/default.py\", line 101, in map_httpcore_exceptions\n    yield\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/httpx/_transports/default.py\", line 250, in handle_request\n    resp = self._pool.handle_request(req)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/httpcore/_sync/connection_pool.py\", line 256, in handle_request\n    raise exc from None\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/httpcore/_sync/connection_pool.py\", line 236, in handle_request\n    response = connection.handle_request(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/httpcore/_sync/connection.py\", line 103, in handle_request\n    return self._connection.handle_request(request)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/httpcore/_sync/http11.py\", line 136, in handle_request\n    raise exc\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/httpcore/_sync/http11.py\", line 106, in handle_request\n    ) = self._receive_response_headers(**kwargs)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/httpcore/_sync/http11.py\", line 177, in _receive_response_headers\n    event = self._receive_event(timeout=timeout)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/httpcore/_sync/http11.py\", line 217, in _receive_event\n    data = self._network_stream.read(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/httpcore/_backends/sync.py\", line 126, in read\n    with map_exceptions(exc_map):\n  File \"/usr/local/lib/python3.11/contextlib.py\", line 158, in __exit__\n    self.gen.throw(typ, value, traceback)\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/httpcore/_exceptions.py\", line 14, in map_exceptions\n    raise to_exc(exc) from exc\nhttpcore.ReadTimeout: The read operation timed out\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/_base_client.py\", line 982, in request\n    response = self._client.send(\n               ^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/httpx/_client.py\", line 914, in send\n    response = self._send_handling_auth(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/httpx/_client.py\", line 942, in _send_handling_auth\n    response = self._send_handling_redirects(\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/httpx/_client.py\", line 979, in _send_handling_redirects\n    response = self._send_single_request(request)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/httpx/_client.py\", line 1014, in _send_single_request\n    response = transport.handle_request(request)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/httpx/_transports/default.py\", line 249, in handle_request\n    with map_httpcore_exceptions():\n  File \"/usr/local/lib/python3.11/contextlib.py\", line 158, in __exit__\n    self.gen.throw(typ, value, traceback)\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/httpx/_transports/default.py\", line 118, in map_httpcore_exceptions\n    raise mapped_exc(message) from exc\nhttpx.ReadTimeout: The read operation timed out\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/_utils.py\", line 109, in __call__\n    return self.func(**kwargs)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 607, in __call__\n    return [func(*args, **kwargs) for func, args, kwargs in self.items]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 607, in <listcomp>\n    return [func(*args, **kwargs) for func, args, kwargs in self.items]\n            ^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/orchestration/scheduling.py\", line 82, in run_on_row\n    result = func(**call_params)\n             ^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 125, in run\n    run.handle_general_exception(e)\n  File \"/benchmarks/src/kaggle_benchmarks/runs.py\", line 85, in handle_general_exception\n    raise e\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 110, in run\n    run.result = self.func(*args, **kwargs)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/ipykernel_12/2368194704.py\", line 27, in find_reversed_word_single\n    response = llm.prompt(prompt)\n               ^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/actors/llms.py\", line 184, in prompt\n    return self.respond(\n           ^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/chats.py\", line 118, in wrapper\n    result = func(self, *args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/actors/llms.py\", line 233, in respond\n    invoke_response = self.invoke(\n                      ^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/actors/llms.py\", line 322, in invoke\n    return self._call_api(raw_messages, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/actors/llms.py\", line 370, in _call_api\n    response = method(\n               ^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/_utils/_utils.py\", line 286, in wrapper\n    return func(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/resources/chat/completions/completions.py\", line 1192, in create\n    return self._post(\n           ^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/_base_client.py\", line 1259, in post\n    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))\n                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/openai/_base_client.py\", line 1000, in request\n    raise APITimeoutError(request=request) from err\nopenai.APITimeoutError: Request timed out.\n\"\"\"\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 110, in run\n    run.result = self.func(*args, **kwargs)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/ipykernel_12/2368194704.py\", line 45, in find_reversed_word_in_noise\n    runs = find_reversed_word_single.evaluate(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 233, in evaluate\n    raise e\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 226, in evaluate\n    all_runs = _evaluate_once()\n               ^^^^^^^^^^^^^^^^\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 204, in _evaluate_once\n    [\n  File \"/benchmarks/src/kaggle_benchmarks/tasks.py\", line 204, in <listcomp>\n    [\n  File \"/benchmarks/src/kaggle_benchmarks/orchestration/scheduling.py\", line 96, in evaluate_function\n    results_iterator = parallel(tasks)\n                       ^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 2072, in __call__\n    return output if self.return_generator else list(output)\n                                                ^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 1682, in _get_outputs\n    yield from self._retrieve()\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 1784, in _retrieve\n    self._raise_error_fast()\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 1859, in _raise_error_fast\n    error_job.get_result(self.timeout)\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 758, in get_result\n    return self._return_or_raise()\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/benchmarks/.venv/lib/python3.11/site-packages/joblib/parallel.py\", line 773, in _return_or_raise\n    raise self._result\nopenai.APITimeoutError: Request timed out.\n"
+}

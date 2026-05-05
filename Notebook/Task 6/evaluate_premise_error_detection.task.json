@@ -1,0 +1,5 @@
+{
+  "versionNumber": 1,
+  "name": "evaluate_premise_error_detection",
+  "definition": "@kbench.task(name=\"evaluate_premise_error_detection\")\ndef evaluate_premise_error_detection(llm, df: pd.DataFrame) -> float:\n    with kbench.client.enable_cache():\n        runs = single_premise_check.evaluate(\n            llm=[llm],\n            evaluation_data=df,\n            n_jobs=4,\n            remove_run_files=True\n        )\n\n    results_df = runs.as_dataframe()\n    if results_df.empty or 'result' not in results_df.columns:\n        return 0.0\n\n    accuracy = float(results_df.result.mean())\n    return accuracy\n"
+}

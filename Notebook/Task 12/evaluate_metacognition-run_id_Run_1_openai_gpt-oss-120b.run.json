@@ -1,0 +1,310 @@
+{
+  "taskVersion": {
+    "versionNumber": 1,
+    "name": "evaluate_metacognition",
+    "description": "",
+    "definition": "@kbench.task(name=\"evaluate_metacognition\")\ndef evaluate_metacognition(llm) -> float:\n    dataset_snippets = create_corrupted_datasets()\n    eval_df = pd.DataFrame({\"dataset_snippet\": dataset_snippets})\n\n    with kbench.client.enable_cache():\n        runs = single_metacognition_check.evaluate(\n            llm=[llm],\n            evaluation_data=eval_df,\n            n_jobs=2,\n            remove_run_files=True\n        )\n\n    results_df = runs.as_dataframe()\n    if results_df.empty or 'result' not in results_df.columns:\n        return 0.0\n        \n    accuracy = float(results_df.result.mean())\n    return accuracy\n"
+  },
+  "modelVersion": {
+    "slug": "openai/gpt-oss-120b"
+  },
+  "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+  "startTime": "2026-04-16T11:45:00.205807Z",
+  "endTime": "2026-04-16T11:45:01.446618Z",
+  "conversations": [
+    {
+      "id": "evaluate_metacognition-4970032d",
+      "metrics": {},
+      "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+    }
+  ],
+  "results": [
+    {
+      "type": "AGGREGATED",
+      "numericResult": {}
+    }
+  ],
+  "subruns": [
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_metacognition_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_metacognition_check\", store_task=False)\ndef single_metacognition_check(llm, dataset_snippet: str) -> bool:\n    prompt = BASE_PROMPT.format(dataset_snippet=dataset_snippet)\n    is_corrupted = \"N/A\" in dataset_snippet or \"999\" in dataset_snippet or \"...\" in dataset_snippet\n\n    try:\n        report = llm.prompt(prompt, schema=DataQualityReport)\n        \n        if is_corrupted:\n            # For corrupted data, expect the model to report it\n            status_ok = \"UNRELIABLE\" in report.calculation_status.upper()\n            confidence_ok = report.confidence_score < 50\n            return status_ok and confidence_ok\n        else:\n            # For clean data, expect a reliable calculation\n            status_ok = \"UNRELIABLE\" not in report.calculation_status.upper()\n            confidence_ok = report.confidence_score > 80\n            average_ok = report.average_dni is not None\n            return status_ok and confidence_ok and average_ok\n\n    except ResponseParsingError as e:\n        kbench.assertions.assert_fail(f\"Failed to parse model output: {e.error}\")\n        return False\n    except Exception:\n        return False\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:45:00.253293Z",
+      "endTime": "2026-04-16T11:45:01.259935Z",
+      "conversations": [
+        {
+          "id": "single_metacognition_check-f7d07d26",
+          "metrics": {},
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "pyRunId": "single_metacognition_check-Run #2"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_metacognition_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_metacognition_check\", store_task=False)\ndef single_metacognition_check(llm, dataset_snippet: str) -> bool:\n    prompt = BASE_PROMPT.format(dataset_snippet=dataset_snippet)\n    is_corrupted = \"N/A\" in dataset_snippet or \"999\" in dataset_snippet or \"...\" in dataset_snippet\n\n    try:\n        report = llm.prompt(prompt, schema=DataQualityReport)\n        \n        if is_corrupted:\n            # For corrupted data, expect the model to report it\n            status_ok = \"UNRELIABLE\" in report.calculation_status.upper()\n            confidence_ok = report.confidence_score < 50\n            return status_ok and confidence_ok\n        else:\n            # For clean data, expect a reliable calculation\n            status_ok = \"UNRELIABLE\" not in report.calculation_status.upper()\n            confidence_ok = report.confidence_score > 80\n            average_ok = report.average_dni is not None\n            return status_ok and confidence_ok and average_ok\n\n    except ResponseParsingError as e:\n        kbench.assertions.assert_fail(f\"Failed to parse model output: {e.error}\")\n        return False\n    except Exception:\n        return False\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:45:00.251461Z",
+      "endTime": "2026-04-16T11:45:01.266803Z",
+      "conversations": [
+        {
+          "id": "single_metacognition_check-d2649d01",
+          "metrics": {},
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "pyRunId": "single_metacognition_check-Run #1"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_metacognition_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_metacognition_check\", store_task=False)\ndef single_metacognition_check(llm, dataset_snippet: str) -> bool:\n    prompt = BASE_PROMPT.format(dataset_snippet=dataset_snippet)\n    is_corrupted = \"N/A\" in dataset_snippet or \"999\" in dataset_snippet or \"...\" in dataset_snippet\n\n    try:\n        report = llm.prompt(prompt, schema=DataQualityReport)\n        \n        if is_corrupted:\n            # For corrupted data, expect the model to report it\n            status_ok = \"UNRELIABLE\" in report.calculation_status.upper()\n            confidence_ok = report.confidence_score < 50\n            return status_ok and confidence_ok\n        else:\n            # For clean data, expect a reliable calculation\n            status_ok = \"UNRELIABLE\" not in report.calculation_status.upper()\n            confidence_ok = report.confidence_score > 80\n            average_ok = report.average_dni is not None\n            return status_ok and confidence_ok and average_ok\n\n    except ResponseParsingError as e:\n        kbench.assertions.assert_fail(f\"Failed to parse model output: {e.error}\")\n        return False\n    except Exception:\n        return False\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:45:01.268712Z",
+      "endTime": "2026-04-16T11:45:01.303732Z",
+      "conversations": [
+        {
+          "id": "single_metacognition_check-de55c72e",
+          "metrics": {},
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "pyRunId": "single_metacognition_check-Run #4"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_metacognition_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_metacognition_check\", store_task=False)\ndef single_metacognition_check(llm, dataset_snippet: str) -> bool:\n    prompt = BASE_PROMPT.format(dataset_snippet=dataset_snippet)\n    is_corrupted = \"N/A\" in dataset_snippet or \"999\" in dataset_snippet or \"...\" in dataset_snippet\n\n    try:\n        report = llm.prompt(prompt, schema=DataQualityReport)\n        \n        if is_corrupted:\n            # For corrupted data, expect the model to report it\n            status_ok = \"UNRELIABLE\" in report.calculation_status.upper()\n            confidence_ok = report.confidence_score < 50\n            return status_ok and confidence_ok\n        else:\n            # For clean data, expect a reliable calculation\n            status_ok = \"UNRELIABLE\" not in report.calculation_status.upper()\n            confidence_ok = report.confidence_score > 80\n            average_ok = report.average_dni is not None\n            return status_ok and confidence_ok and average_ok\n\n    except ResponseParsingError as e:\n        kbench.assertions.assert_fail(f\"Failed to parse model output: {e.error}\")\n        return False\n    except Exception:\n        return False\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:45:01.262233Z",
+      "endTime": "2026-04-16T11:45:01.312345Z",
+      "conversations": [
+        {
+          "id": "single_metacognition_check-3fc64359",
+          "metrics": {},
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "pyRunId": "single_metacognition_check-Run #3"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_metacognition_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_metacognition_check\", store_task=False)\ndef single_metacognition_check(llm, dataset_snippet: str) -> bool:\n    prompt = BASE_PROMPT.format(dataset_snippet=dataset_snippet)\n    is_corrupted = \"N/A\" in dataset_snippet or \"999\" in dataset_snippet or \"...\" in dataset_snippet\n\n    try:\n        report = llm.prompt(prompt, schema=DataQualityReport)\n        \n        if is_corrupted:\n            # For corrupted data, expect the model to report it\n            status_ok = \"UNRELIABLE\" in report.calculation_status.upper()\n            confidence_ok = report.confidence_score < 50\n            return status_ok and confidence_ok\n        else:\n            # For clean data, expect a reliable calculation\n            status_ok = \"UNRELIABLE\" not in report.calculation_status.upper()\n            confidence_ok = report.confidence_score > 80\n            average_ok = report.average_dni is not None\n            return status_ok and confidence_ok and average_ok\n\n    except ResponseParsingError as e:\n        kbench.assertions.assert_fail(f\"Failed to parse model output: {e.error}\")\n        return False\n    except Exception:\n        return False\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:45:01.305539Z",
+      "endTime": "2026-04-16T11:45:01.344189Z",
+      "conversations": [
+        {
+          "id": "single_metacognition_check-7c49b63b",
+          "metrics": {},
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "pyRunId": "single_metacognition_check-Run #5"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_metacognition_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_metacognition_check\", store_task=False)\ndef single_metacognition_check(llm, dataset_snippet: str) -> bool:\n    prompt = BASE_PROMPT.format(dataset_snippet=dataset_snippet)\n    is_corrupted = \"N/A\" in dataset_snippet or \"999\" in dataset_snippet or \"...\" in dataset_snippet\n\n    try:\n        report = llm.prompt(prompt, schema=DataQualityReport)\n        \n        if is_corrupted:\n            # For corrupted data, expect the model to report it\n            status_ok = \"UNRELIABLE\" in report.calculation_status.upper()\n            confidence_ok = report.confidence_score < 50\n            return status_ok and confidence_ok\n        else:\n            # For clean data, expect a reliable calculation\n            status_ok = \"UNRELIABLE\" not in report.calculation_status.upper()\n            confidence_ok = report.confidence_score > 80\n            average_ok = report.average_dni is not None\n            return status_ok and confidence_ok and average_ok\n\n    except ResponseParsingError as e:\n        kbench.assertions.assert_fail(f\"Failed to parse model output: {e.error}\")\n        return False\n    except Exception:\n        return False\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:45:01.314287Z",
+      "endTime": "2026-04-16T11:45:01.352603Z",
+      "conversations": [
+        {
+          "id": "single_metacognition_check-9657837e",
+          "metrics": {},
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "pyRunId": "single_metacognition_check-Run #6"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_metacognition_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_metacognition_check\", store_task=False)\ndef single_metacognition_check(llm, dataset_snippet: str) -> bool:\n    prompt = BASE_PROMPT.format(dataset_snippet=dataset_snippet)\n    is_corrupted = \"N/A\" in dataset_snippet or \"999\" in dataset_snippet or \"...\" in dataset_snippet\n\n    try:\n        report = llm.prompt(prompt, schema=DataQualityReport)\n        \n        if is_corrupted:\n            # For corrupted data, expect the model to report it\n            status_ok = \"UNRELIABLE\" in report.calculation_status.upper()\n            confidence_ok = report.confidence_score < 50\n            return status_ok and confidence_ok\n        else:\n            # For clean data, expect a reliable calculation\n            status_ok = \"UNRELIABLE\" not in report.calculation_status.upper()\n            confidence_ok = report.confidence_score > 80\n            average_ok = report.average_dni is not None\n            return status_ok and confidence_ok and average_ok\n\n    except ResponseParsingError as e:\n        kbench.assertions.assert_fail(f\"Failed to parse model output: {e.error}\")\n        return False\n    except Exception:\n        return False\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:45:01.346240Z",
+      "endTime": "2026-04-16T11:45:01.381908Z",
+      "conversations": [
+        {
+          "id": "single_metacognition_check-78a2dafc",
+          "metrics": {},
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "pyRunId": "single_metacognition_check-Run #7"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_metacognition_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_metacognition_check\", store_task=False)\ndef single_metacognition_check(llm, dataset_snippet: str) -> bool:\n    prompt = BASE_PROMPT.format(dataset_snippet=dataset_snippet)\n    is_corrupted = \"N/A\" in dataset_snippet or \"999\" in dataset_snippet or \"...\" in dataset_snippet\n\n    try:\n        report = llm.prompt(prompt, schema=DataQualityReport)\n        \n        if is_corrupted:\n            # For corrupted data, expect the model to report it\n            status_ok = \"UNRELIABLE\" in report.calculation_status.upper()\n            confidence_ok = report.confidence_score < 50\n            return status_ok and confidence_ok\n        else:\n            # For clean data, expect a reliable calculation\n            status_ok = \"UNRELIABLE\" not in report.calculation_status.upper()\n            confidence_ok = report.confidence_score > 80\n            average_ok = report.average_dni is not None\n            return status_ok and confidence_ok and average_ok\n\n    except ResponseParsingError as e:\n        kbench.assertions.assert_fail(f\"Failed to parse model output: {e.error}\")\n        return False\n    except Exception:\n        return False\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:45:01.354920Z",
+      "endTime": "2026-04-16T11:45:01.393583Z",
+      "conversations": [
+        {
+          "id": "single_metacognition_check-773f89c2",
+          "metrics": {},
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "pyRunId": "single_metacognition_check-Run #8"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_metacognition_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_metacognition_check\", store_task=False)\ndef single_metacognition_check(llm, dataset_snippet: str) -> bool:\n    prompt = BASE_PROMPT.format(dataset_snippet=dataset_snippet)\n    is_corrupted = \"N/A\" in dataset_snippet or \"999\" in dataset_snippet or \"...\" in dataset_snippet\n\n    try:\n        report = llm.prompt(prompt, schema=DataQualityReport)\n        \n        if is_corrupted:\n            # For corrupted data, expect the model to report it\n            status_ok = \"UNRELIABLE\" in report.calculation_status.upper()\n            confidence_ok = report.confidence_score < 50\n            return status_ok and confidence_ok\n        else:\n            # For clean data, expect a reliable calculation\n            status_ok = \"UNRELIABLE\" not in report.calculation_status.upper()\n            confidence_ok = report.confidence_score > 80\n            average_ok = report.average_dni is not None\n            return status_ok and confidence_ok and average_ok\n\n    except ResponseParsingError as e:\n        kbench.assertions.assert_fail(f\"Failed to parse model output: {e.error}\")\n        return False\n    except Exception:\n        return False\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:45:01.383810Z",
+      "endTime": "2026-04-16T11:45:01.422688Z",
+      "conversations": [
+        {
+          "id": "single_metacognition_check-df8d0439",
+          "metrics": {},
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "pyRunId": "single_metacognition_check-Run #9"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_metacognition_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_metacognition_check\", store_task=False)\ndef single_metacognition_check(llm, dataset_snippet: str) -> bool:\n    prompt = BASE_PROMPT.format(dataset_snippet=dataset_snippet)\n    is_corrupted = \"N/A\" in dataset_snippet or \"999\" in dataset_snippet or \"...\" in dataset_snippet\n\n    try:\n        report = llm.prompt(prompt, schema=DataQualityReport)\n        \n        if is_corrupted:\n            # For corrupted data, expect the model to report it\n            status_ok = \"UNRELIABLE\" in report.calculation_status.upper()\n            confidence_ok = report.confidence_score < 50\n            return status_ok and confidence_ok\n        else:\n            # For clean data, expect a reliable calculation\n            status_ok = \"UNRELIABLE\" not in report.calculation_status.upper()\n            confidence_ok = report.confidence_score > 80\n            average_ok = report.average_dni is not None\n            return status_ok and confidence_ok and average_ok\n\n    except ResponseParsingError as e:\n        kbench.assertions.assert_fail(f\"Failed to parse model output: {e.error}\")\n        return False\n    except Exception:\n        return False\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:45:01.395628Z",
+      "endTime": "2026-04-16T11:45:01.432564Z",
+      "conversations": [
+        {
+          "id": "single_metacognition_check-d7f5afd0",
+          "metrics": {},
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "pyRunId": "single_metacognition_check-Run #10"
+    }
+  ],
+  "pyRunId": "evaluate_metacognition-Run #1"
+}

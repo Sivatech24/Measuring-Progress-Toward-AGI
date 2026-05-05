@@ -1,0 +1,6 @@
+{
+  "versionNumber": 1,
+  "name": "executive_function_benchmark",
+  "description": "Evaluates an LLM's ability to follow complex constraints over a series of problems.",
+  "definition": "@kbench.task(name=\"executive_function_benchmark\")\ndef executive_function_benchmark(llm, df: pd.DataFrame) -> float:\n    \"\"\"\n    Evaluates an LLM's ability to follow complex constraints over a series of problems.\n    \"\"\"\n    with kbench.client.enable_cache():\n        runs = single_inhibition_test.evaluate(\n            llm=[llm],\n            evaluation_data=df,\n            n_jobs=2,\n            remove_run_files=True\n        )\n\n    eval_df = runs.as_dataframe()\n    if eval_df.empty or 'result' not in eval_df.columns:\n        return 0.0\n\n    # The result column contains booleans (True/False) from the single_inhibition_test task.\n    # The mean of a boolean series is the success rate (accuracy).\n    accuracy = float(eval_df.result.mean())\n    return accuracy\n"
+}

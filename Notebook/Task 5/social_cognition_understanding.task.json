@@ -1,0 +1,5 @@
+{
+  "versionNumber": 1,
+  "name": "social_cognition_understanding",
+  "definition": "@kbench.task(name=\"social_cognition_understanding\")\ndef social_cognition_understanding(llm) -> tuple[int, int]:\n    with kbench.client.enable_cache():\n        # This returns a collection of individual 'Run' objects\n        runs = single_social_cognition_check.evaluate(\n            llm=[llm],\n            evaluation_data=EVALUATION_DATA,\n            n_jobs=5,\n            remove_run_files=True\n        )\n\n    # DIRECT COUNT: Avoid as_dataframe() to prevent KeyError 'status'\n    # Each 'run' in the collection has a .status attribute\n    passed_count = sum(1 for run in runs if \"success\" in str(run.status).lower())\n    total_count = len(runs)\n    \n    return passed_count, total_count\n"
+}

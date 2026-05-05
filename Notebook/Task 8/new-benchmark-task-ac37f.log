@@ -1,0 +1,14 @@
+[{"stream_name":"stderr","time":119.988059569,"data":"WARNING:root:An error occurred during evaluation attempt 1: Error code: 503 - {'message': 'Could not reach model, even after multiple retries. Try again later.', 'type': 'invalid_request_error'}\n"}
+,{"stream_name":"stderr","time":119.988122227,"data":"\n"}
+,{"stream_name":"stderr","time":119.988138567,"data":"WARNING:root:An error occurred during evaluation attempt 1: Error code: 503 - {'message': 'Could not reach model, even after multiple retries. Try again later.', 'type': 'invalid_request_error'}\n"}
+,{"stream_name":"stderr","time":132.117185859,"data":"/benchmarks/.venv/lib/python3.11/site-packages/traitlets/traitlets.py:2930: FutureWarning: --Exporter.preprocessors=[\"remove_papermill_header.RemovePapermillHeader\"] for containers is deprecated in traitlets 5.0. You can pass `--Exporter.preprocessors item` ... multiple times to add items to a list.\n"}
+,{"stream_name":"stderr","time":132.117240253,"data":"  warn(\n"}
+,{"stream_name":"stderr","time":132.141082259,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to notebook\n"}
+,{"stream_name":"stderr","time":132.638363108,"data":"[NbConvertApp] Writing 1808437 bytes to __notebook__.ipynb\n"}
+,{"stream_name":"stderr","time":135.8237837,"data":"/benchmarks/.venv/lib/python3.11/site-packages/traitlets/traitlets.py:2930: FutureWarning: --Exporter.preprocessors=[\"nbconvert.preprocessors.ExtractOutputPreprocessor\"] for containers is deprecated in traitlets 5.0. You can pass `--Exporter.preprocessors item` ... multiple times to add items to a list.\n"}
+,{"stream_name":"stderr","time":135.8238263,"data":"  warn(\n"}
+,{"stream_name":"stderr","time":135.848337388,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to html\n"}
+,{"stream_name":"stderr","time":136.962987107,"data":"/benchmarks/.venv/share/jupyter/nbconvert/templates/base/display_priority.j2:32: UserWarning: Your element with mimetype(s) dict_keys([]) is not able to be represented.\n"}
+,{"stream_name":"stderr","time":136.96302916,"data":"  {%- elif type == 'text/vnd.mermaid' -%}\n"}
+,{"stream_name":"stderr","time":137.015354007,"data":"[NbConvertApp] Writing 1885622 bytes to __results__.html\n"}
+]

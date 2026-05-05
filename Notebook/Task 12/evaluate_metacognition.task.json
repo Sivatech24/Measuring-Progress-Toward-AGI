@@ -1,0 +1,5 @@
+{
+  "versionNumber": 1,
+  "name": "evaluate_metacognition",
+  "definition": "@kbench.task(name=\"evaluate_metacognition\")\ndef evaluate_metacognition(llm) -> float:\n    dataset_snippets = create_corrupted_datasets()\n    eval_df = pd.DataFrame({\"dataset_snippet\": dataset_snippets})\n\n    with kbench.client.enable_cache():\n        runs = single_metacognition_check.evaluate(\n            llm=[llm],\n            evaluation_data=eval_df,\n            n_jobs=2,\n            remove_run_files=True\n        )\n\n    results_df = runs.as_dataframe()\n    if results_df.empty or 'result' not in results_df.columns:\n        return 0.0\n        \n    accuracy = float(results_df.result.mean())\n    return accuracy\n"
+}
