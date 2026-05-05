@@ -1,0 +1,1218 @@
+{
+  "taskVersion": {
+    "versionNumber": 1,
+    "name": "executive_function_benchmark",
+    "description": "Evaluates an LLM's ability to follow complex constraints over a series of problems.",
+    "definition": "@kbench.task(name=\"executive_function_benchmark\")\ndef executive_function_benchmark(llm, df: pd.DataFrame) -> float:\n    \"\"\"\n    Evaluates an LLM's ability to follow complex constraints over a series of problems.\n    \"\"\"\n    with kbench.client.enable_cache():\n        runs = single_inhibition_test.evaluate(\n            llm=[llm],\n            evaluation_data=df,\n            n_jobs=2,\n            remove_run_files=True\n        )\n\n    eval_df = runs.as_dataframe()\n    if eval_df.empty or 'result' not in eval_df.columns:\n        return 0.0\n\n    # The result column contains booleans (True/False) from the single_inhibition_test task.\n    # The mean of a boolean series is the success rate (accuracy).\n    accuracy = float(eval_df.result.mean())\n    return accuracy\n"
+  },
+  "modelVersion": {
+    "slug": "openai/gpt-oss-120b"
+  },
+  "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+  "startTime": "2026-04-16T11:42:26.436156Z",
+  "endTime": "2026-04-16T11:53:56.781785Z",
+  "conversations": [
+    {
+      "id": "executive_function_benchmark-4e522f68",
+      "metrics": {},
+      "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+    }
+  ],
+  "results": [
+    {
+      "type": "AGGREGATED",
+      "numericResult": {
+        "value": 0.4
+      }
+    }
+  ],
+  "subruns": [
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_inhibition_test",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_inhibition_test\", store_task=False)\ndef single_inhibition_test(llm, problem: str, answer_hour: int, answer_numeral: str) -> bool:\n    prompt = f\"\"\"Solve the following math word problem: '{problem}'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n\"\"\"\n    response = llm.prompt(prompt)\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The response correctly identifies the answer as {answer_hour} o'clock or '{answer_numeral}'.\",\n            \"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\",\n        ],\n        response_text=response,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(\"Judge LLM failed to return a valid assessment.\")\n        return False\n\n    all_passed = True\n    for result in assessment.results:\n        if not result.passed:\n            all_passed = False\n            # Log the failure reason for easier debugging in the final report\n            kbench.assertions.assert_true(False, expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\")\n\n    return all_passed\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:42:26.450771Z",
+      "endTime": "2026-04-16T11:42:46.888090Z",
+      "conversations": [
+        {
+          "id": "single_inhibition_test-6777eaf4",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Solve the following math word problem: 'If a train leaves at 2:00 PM and travels 120 miles at 60 mph, what time does it arrive?'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "IV:00\u202f"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 162,
+                "outputTokens": 700,
+                "inputTokensCostNanodollars": "14580",
+                "outputTokensCostNanodollars": "252000",
+                "totalBackendLatencyMs": "11475"
+              },
+              "id": "single_inhibition_test-6777eaf4-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 162,
+            "outputTokens": 700,
+            "inputTokensCostNanodollars": "14580",
+            "outputTokensCostNanodollars": "252000",
+            "totalBackendLatencyMs": "11475"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-1298ef36",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        IV:00\u202f\n\n        **Criteria:**\n        1. The response correctly identifies the answer as 4 o'clock or 'IV'.\n2. The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The response correctly identifies the answer as 4 o'clock or 'IV'.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response explicitly states 'IV', which corresponds to 4 o'clock.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response uses the Roman Numeral 'IV', which satisfies condition B of the negative constraint.\\\",\\\"confidence\\\":10}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 373,
+                "outputTokens": 169,
+                "inputTokensCostNanodollars": "93250",
+                "outputTokensCostNanodollars": "253500",
+                "totalBackendLatencyMs": "1191"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-1298ef36-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 373,
+            "outputTokens": 169,
+            "inputTokensCostNanodollars": "93250",
+            "outputTokensCostNanodollars": "253500",
+            "totalBackendLatencyMs": "1191"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_inhibition_test-Run #1"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_inhibition_test",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_inhibition_test\", store_task=False)\ndef single_inhibition_test(llm, problem: str, answer_hour: int, answer_numeral: str) -> bool:\n    prompt = f\"\"\"Solve the following math word problem: '{problem}'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n\"\"\"\n    response = llm.prompt(prompt)\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The response correctly identifies the answer as {answer_hour} o'clock or '{answer_numeral}'.\",\n            \"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\",\n        ],\n        response_text=response,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(\"Judge LLM failed to return a valid assessment.\")\n        return False\n\n    all_passed = True\n    for result in assessment.results:\n        if not result.passed:\n            all_passed = False\n            # Log the failure reason for easier debugging in the final report\n            kbench.assertions.assert_true(False, expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\")\n\n    return all_passed\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:42:46.890800Z",
+      "endTime": "2026-04-16T11:42:55.615051Z",
+      "conversations": [
+        {
+          "id": "single_inhibition_test-bc785fbe",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Solve the following math word problem: 'A cyclist starts at 8:00 AM, biking 40 miles at 10 mph. When do they finish?'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "VIII\u202fAM\u202f+\u202fIV\u202fh\u202f=\u202fXII\u202f"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 160,
+                "outputTokens": 521,
+                "inputTokensCostNanodollars": "14400",
+                "outputTokensCostNanodollars": "187560",
+                "totalBackendLatencyMs": "7169"
+              },
+              "id": "single_inhibition_test-bc785fbe-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 160,
+            "outputTokens": 521,
+            "inputTokensCostNanodollars": "14400",
+            "outputTokensCostNanodollars": "187560",
+            "totalBackendLatencyMs": "7169"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-17215422",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        VIII\u202fAM\u202f+\u202fIV\u202fh\u202f=\u202fXII\u202f\n\n        **Criteria:**\n        1. The response correctly identifies the answer as 12 o'clock or 'XII'.\n2. The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The response correctly identifies the answer as 12 o'clock or 'XII'.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response explicitly states 'XII', which corresponds to 12 o'clock.\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response contains the letters 'A' and 'M', and 'h'. It avoids the letters 'o' and 'r' entirely. Furthermore, it uses Roman Numerals for the time.\\\",\\\"confidence\\\":5}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 395,
+                "outputTokens": 190,
+                "inputTokensCostNanodollars": "98750",
+                "outputTokensCostNanodollars": "285000",
+                "totalBackendLatencyMs": "1082"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-17215422-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 395,
+            "outputTokens": 190,
+            "inputTokensCostNanodollars": "98750",
+            "outputTokensCostNanodollars": "285000",
+            "totalBackendLatencyMs": "1082"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_inhibition_test-Run #3"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_inhibition_test",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_inhibition_test\", store_task=False)\ndef single_inhibition_test(llm, problem: str, answer_hour: int, answer_numeral: str) -> bool:\n    prompt = f\"\"\"Solve the following math word problem: '{problem}'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n\"\"\"\n    response = llm.prompt(prompt)\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The response correctly identifies the answer as {answer_hour} o'clock or '{answer_numeral}'.\",\n            \"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\",\n        ],\n        response_text=response,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(\"Judge LLM failed to return a valid assessment.\")\n        return False\n\n    all_passed = True\n    for result in assessment.results:\n        if not result.passed:\n            all_passed = False\n            # Log the failure reason for easier debugging in the final report\n            kbench.assertions.assert_true(False, expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\")\n\n    return all_passed\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:42:26.451520Z",
+      "endTime": "2026-04-16T11:42:58.928206Z",
+      "conversations": [
+        {
+          "id": "single_inhibition_test-994ed300",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Solve the following math word problem: 'A bus departs at 1:00 PM. It travels 180 miles at a speed of 60 mph. When does it reach its destination?'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "Leaves at\u202f1:00\u202fPM.  \nAt\u202f60\u202fmph it makes\u202f180\u202fmi in\u202f3\u202fh.  \nHence it gets at\u202f4:00\u202fPM"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 167,
+                "outputTokens": 1071,
+                "inputTokensCostNanodollars": "15030",
+                "outputTokensCostNanodollars": "385560",
+                "totalBackendLatencyMs": "14360"
+              },
+              "id": "single_inhibition_test-994ed300-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 167,
+            "outputTokens": 1071,
+            "inputTokensCostNanodollars": "15030",
+            "outputTokensCostNanodollars": "385560",
+            "totalBackendLatencyMs": "14360"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-0de4382b",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        Leaves at\u202f1:00\u202fPM.  \nAt\u202f60\u202fmph it makes\u202f180\u202fmi in\u202f3\u202fh.  \nHence it gets at\u202f4:00\u202fPM\n\n        **Criteria:**\n        1. The response correctly identifies the answer as 4 o'clock or 'IV'.\n2. The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The response correctly identifies the answer as 4 o'clock or 'IV'.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response identifies the time as 4:00 PM, which corresponds to the correct answer.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\\\",\\\"passed\\\":false,\\\"reason\\\":\\\"The response contains the letters 'o' and 'r' (e.g., in 'o'clock' implied notation, 'four', or words like 'from', 'or', etc. are absent, but the text specifically uses '4:00 PM', which contains the letter 'o' if spelled out, and the words 'or', 'for' are not used, but the word 'four' is absent. More importantly, it does not exclusively use Roman Numerals for the time as required by option B when letters are present in the text). The text contains the letter 'r' (e.g., 'o'clock' is not present, but words like 'makes' do not have it, yet 'or' and 'r' exist in words like 'or' implied, and the constraint B specifically requires Roman Numerals if the letters 'o' or 'r' are present. The text contains 'o' in '4:00' and 'r' in 'h'/'mi', and fails to represent the time as 'IV'.\\\",\\\"confidence\\\":10}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 431,
+                "outputTokens": 376,
+                "inputTokensCostNanodollars": "107750",
+                "outputTokensCostNanodollars": "564000",
+                "totalBackendLatencyMs": "1924"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-0de4382b-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 431,
+            "outputTokens": 376,
+            "inputTokensCostNanodollars": "107750",
+            "outputTokensCostNanodollars": "564000",
+            "totalBackendLatencyMs": "1924"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "assertions": [
+        {
+          "expectation": "Criterion 'The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.' failed: The response contains the letters 'o' and 'r' (e.g., in 'o'clock' implied notation, 'four', or words like 'from', 'or', etc. are absent, but the text specifically uses '4:00 PM', which contains the letter 'o' if spelled out, and the words 'or', 'for' are not used, but the word 'four' is absent. More importantly, it does not exclusively use Roman Numerals for the time as required by option B when letters are present in the text). The text contains the letter 'r' (e.g., 'o'clock' is not present, but words like 'makes' do not have it, yet 'or' and 'r' exist in words like 'or' implied, and the constraint B specifically requires Roman Numerals if the letters 'o' or 'r' are present. The text contains 'o' in '4:00' and 'r' in 'h'/'mi', and fails to represent the time as 'IV'.",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_FAILED",
+          "lineNumber": 86,
+          "definition": "kbench.assertions.assert_true(False, expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\")",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_inhibition_test-994ed300",
+              "requestId": "single_inhibition_test-994ed300-req-1"
+            }
+          ]
+        }
+      ],
+      "pyRunId": "single_inhibition_test-Run #2"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_inhibition_test",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_inhibition_test\", store_task=False)\ndef single_inhibition_test(llm, problem: str, answer_hour: int, answer_numeral: str) -> bool:\n    prompt = f\"\"\"Solve the following math word problem: '{problem}'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n\"\"\"\n    response = llm.prompt(prompt)\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The response correctly identifies the answer as {answer_hour} o'clock or '{answer_numeral}'.\",\n            \"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\",\n        ],\n        response_text=response,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(\"Judge LLM failed to return a valid assessment.\")\n        return False\n\n    all_passed = True\n    for result in assessment.results:\n        if not result.passed:\n            all_passed = False\n            # Log the failure reason for easier debugging in the final report\n            kbench.assertions.assert_true(False, expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\")\n\n    return all_passed\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:42:55.617779Z",
+      "endTime": "2026-04-16T11:43:14.481392Z",
+      "conversations": [
+        {
+          "id": "single_inhibition_test-895043ed",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Solve the following math word problem: 'A plane takes off at 10:00 AM. It flies 1500 miles at a speed of 500 mph. What time does it land?'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "1:00\u202fPM"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 167,
+                "outputTokens": 625,
+                "inputTokensCostNanodollars": "15030",
+                "outputTokensCostNanodollars": "225000",
+                "totalBackendLatencyMs": "10696"
+              },
+              "id": "single_inhibition_test-895043ed-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 167,
+            "outputTokens": 625,
+            "inputTokensCostNanodollars": "15030",
+            "outputTokensCostNanodollars": "225000",
+            "totalBackendLatencyMs": "10696"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-bdef6b21",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        1:00\u202fPM\n\n        **Criteria:**\n        1. The response correctly identifies the answer as 1 o'clock or 'I'.\n2. The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The response correctly identifies the answer as 1 o'clock or 'I'.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response '1:00 PM' correctly identifies the time as 1 o'clock.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\\\",\\\"passed\\\":false,\\\"reason\\\":\\\"The response '1:00 PM' contains the letters 'o' (in the implied time format) and 'M' (which is fine), but it fails to avoid 'o' and 'r'. Furthermore, it does not use Roman Numerals for the time value itself as required by the fallback condition.\\\",\\\"confidence\\\":10}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 374,
+                "outputTokens": 218,
+                "inputTokensCostNanodollars": "93500",
+                "outputTokensCostNanodollars": "327000",
+                "totalBackendLatencyMs": "1121"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-bdef6b21-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 374,
+            "outputTokens": 218,
+            "inputTokensCostNanodollars": "93500",
+            "outputTokensCostNanodollars": "327000",
+            "totalBackendLatencyMs": "1121"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "assertions": [
+        {
+          "expectation": "Criterion 'The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.' failed: The response '1:00 PM' contains the letters 'o' (in the implied time format) and 'M' (which is fine), but it fails to avoid 'o' and 'r'. Furthermore, it does not use Roman Numerals for the time value itself as required by the fallback condition.",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_FAILED",
+          "lineNumber": 86,
+          "definition": "kbench.assertions.assert_true(False, expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\")",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_inhibition_test-895043ed",
+              "requestId": "single_inhibition_test-895043ed-req-1"
+            }
+          ]
+        }
+      ],
+      "pyRunId": "single_inhibition_test-Run #4"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_inhibition_test",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_inhibition_test\", store_task=False)\ndef single_inhibition_test(llm, problem: str, answer_hour: int, answer_numeral: str) -> bool:\n    prompt = f\"\"\"Solve the following math word problem: '{problem}'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n\"\"\"\n    response = llm.prompt(prompt)\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The response correctly identifies the answer as {answer_hour} o'clock or '{answer_numeral}'.\",\n            \"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\",\n        ],\n        response_text=response,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(\"Judge LLM failed to return a valid assessment.\")\n        return False\n\n    all_passed = True\n    for result in assessment.results:\n        if not result.passed:\n            all_passed = False\n            # Log the failure reason for easier debugging in the final report\n            kbench.assertions.assert_true(False, expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\")\n\n    return all_passed\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:43:14.484164Z",
+      "endTime": "2026-04-16T11:43:23.598630Z",
+      "conversations": [
+        {
+          "id": "single_inhibition_test-4c7d9d42",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Solve the following math word problem: 'A ship leaves port at 5:00 AM, sailing 200 miles at 25 mph. Calculate its arrival time.'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "1"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 160,
+                "outputTokens": 499,
+                "inputTokensCostNanodollars": "14400",
+                "outputTokensCostNanodollars": "179640",
+                "totalBackendLatencyMs": "7292"
+              },
+              "id": "single_inhibition_test-4c7d9d42-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 160,
+            "outputTokens": 499,
+            "inputTokensCostNanodollars": "14400",
+            "outputTokensCostNanodollars": "179640",
+            "totalBackendLatencyMs": "7292"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-d441146e",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        1\n\n        **Criteria:**\n        1. The response correctly identifies the answer as 1 o'clock or 'I'.\n2. The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The response correctly identifies the answer as 1 o'clock or 'I'.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response provided is '1', which correctly identifies the numerical value for 1 o'clock.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response '1' contains no letters, therefore it adheres to the constraint of avoiding the letters 'o' and 'r'.\\\",\\\"confidence\\\":10}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 367,
+                "outputTokens": 181,
+                "inputTokensCostNanodollars": "91750",
+                "outputTokensCostNanodollars": "271500",
+                "totalBackendLatencyMs": "1258"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-d441146e-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 367,
+            "outputTokens": 181,
+            "inputTokensCostNanodollars": "91750",
+            "outputTokensCostNanodollars": "271500",
+            "totalBackendLatencyMs": "1258"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_inhibition_test-Run #6"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_inhibition_test",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_inhibition_test\", store_task=False)\ndef single_inhibition_test(llm, problem: str, answer_hour: int, answer_numeral: str) -> bool:\n    prompt = f\"\"\"Solve the following math word problem: '{problem}'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n\"\"\"\n    response = llm.prompt(prompt)\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The response correctly identifies the answer as {answer_hour} o'clock or '{answer_numeral}'.\",\n            \"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\",\n        ],\n        response_text=response,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(\"Judge LLM failed to return a valid assessment.\")\n        return False\n\n    all_passed = True\n    for result in assessment.results:\n        if not result.passed:\n            all_passed = False\n            # Log the failure reason for easier debugging in the final report\n            kbench.assertions.assert_true(False, expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\")\n\n    return all_passed\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:42:58.930418Z",
+      "endTime": "2026-04-16T11:43:24.788397Z",
+      "conversations": [
+        {
+          "id": "single_inhibition_test-62fc3038",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Solve the following math word problem: 'You start a hike at 9:00 AM. The trail is 9 miles long and you walk at 3 mph. What time will you be done?'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "Finish at\u202fXII\u202fPM."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 169,
+                "outputTokens": 551,
+                "inputTokensCostNanodollars": "15210",
+                "outputTokensCostNanodollars": "198360",
+                "totalBackendLatencyMs": "8585"
+              },
+              "id": "single_inhibition_test-62fc3038-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 169,
+            "outputTokens": 551,
+            "inputTokensCostNanodollars": "15210",
+            "outputTokensCostNanodollars": "198360",
+            "totalBackendLatencyMs": "8585"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-6e20e9c6",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        Finish at\u202fXII\u202fPM.\n\n        **Criteria:**\n        1. The response correctly identifies the answer as 12 o'clock or 'XII'.\n2. The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The response correctly identifies the answer as 12 o'clock or 'XII'.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response explicitly states 'XII', which correctly identifies the requested time.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\\\",\\\"passed\\\":false,\\\"reason\\\":\\\"The response contains the letter 'r' (in the word 'Finish') and does not strictly fall under condition A. While it uses Roman Numerals for the time (XII), the instruction implies the whole response must adhere to the constraints. Since 'Finish' contains 'i', 'n', 'i', 's', 'h' and 'r', the inclusion of the word 'Finish' violates the negative constraint by containing the letter 'r'.\\\",\\\"confidence\\\":9}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 378,
+                "outputTokens": 240,
+                "inputTokensCostNanodollars": "94500",
+                "outputTokensCostNanodollars": "360000",
+                "totalBackendLatencyMs": "1414"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-6e20e9c6-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 378,
+            "outputTokens": 240,
+            "inputTokensCostNanodollars": "94500",
+            "outputTokensCostNanodollars": "360000",
+            "totalBackendLatencyMs": "1414"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "assertions": [
+        {
+          "expectation": "Criterion 'The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.' failed: The response contains the letter 'r' (in the word 'Finish') and does not strictly fall under condition A. While it uses Roman Numerals for the time (XII), the instruction implies the whole response must adhere to the constraints. Since 'Finish' contains 'i', 'n', 'i', 's', 'h' and 'r', the inclusion of the word 'Finish' violates the negative constraint by containing the letter 'r'.",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_FAILED",
+          "lineNumber": 86,
+          "definition": "kbench.assertions.assert_true(False, expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\")",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_inhibition_test-62fc3038",
+              "requestId": "single_inhibition_test-62fc3038-req-1"
+            }
+          ]
+        }
+      ],
+      "pyRunId": "single_inhibition_test-Run #5"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_inhibition_test",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_inhibition_test\", store_task=False)\ndef single_inhibition_test(llm, problem: str, answer_hour: int, answer_numeral: str) -> bool:\n    prompt = f\"\"\"Solve the following math word problem: '{problem}'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n\"\"\"\n    response = llm.prompt(prompt)\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The response correctly identifies the answer as {answer_hour} o'clock or '{answer_numeral}'.\",\n            \"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\",\n        ],\n        response_text=response,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(\"Judge LLM failed to return a valid assessment.\")\n        return False\n\n    all_passed = True\n    for result in assessment.results:\n        if not result.passed:\n            all_passed = False\n            # Log the failure reason for easier debugging in the final report\n            kbench.assertions.assert_true(False, expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\")\n\n    return all_passed\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:43:24.791304Z",
+      "endTime": "2026-04-16T11:43:44.166365Z",
+      "conversations": [
+        {
+          "id": "single_inhibition_test-5128514e",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Solve the following math word problem: 'If a meeting starts at 11:00 AM and a presentation is 120 minutes long, what time does it end?'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "It ends at 1:"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 161,
+                "outputTokens": 834,
+                "inputTokensCostNanodollars": "14490",
+                "outputTokensCostNanodollars": "300240",
+                "totalBackendLatencyMs": "11100"
+              },
+              "id": "single_inhibition_test-5128514e-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 161,
+            "outputTokens": 834,
+            "inputTokensCostNanodollars": "14490",
+            "outputTokensCostNanodollars": "300240",
+            "totalBackendLatencyMs": "11100"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-9f860a01",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        It ends at 1:\n\n        **Criteria:**\n        1. The response correctly identifies the answer as 1 o'clock or 'I'.\n2. The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The response correctly identifies the answer as 1 o'clock or 'I'.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response explicitly states '1', which identifies the correct answer.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\\\",\\\"passed\\\":false,\\\"reason\\\":\\\"The response contains the words 'ends' and 'at', both of which contain the letter 'e' (not restricted) but more importantly, 'o' is present in 'o'clock' (implied) or if simply checking characters, 'It ends at 1' contains no 'o' or 'r'. However, wait: 'ends' contains neither, 'at' contains neither, 'It' contains neither. Re-evaluating: 'I-t-e-n-d-s-a-t-1'. There are no 'o' or 'r' characters in the string 'It ends at 1'. Wait, 'ends' has no 'o' or 'r'. 'at' has no 'o' or 'r'. 'It' has no 'o' or 'r'. Actually, the constraint is satisfied. Wait\\u2014the response provided was 'It ends at 1:'. Let me re-read the characters: 'I', 't', ' ', 'e', 'n', 'd', 's', ' ', 'a', 't', ' ', '1'. None of these characters are 'o' or 'r'.\\\",\\\"confidence\\\":10}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 372,
+                "outputTokens": 392,
+                "inputTokensCostNanodollars": "93000",
+                "outputTokensCostNanodollars": "588000",
+                "totalBackendLatencyMs": "5474"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-9f860a01-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 372,
+            "outputTokens": 392,
+            "inputTokensCostNanodollars": "93000",
+            "outputTokensCostNanodollars": "588000",
+            "totalBackendLatencyMs": "5474"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "assertions": [
+        {
+          "expectation": "Criterion 'The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.' failed: The response contains the words 'ends' and 'at', both of which contain the letter 'e' (not restricted) but more importantly, 'o' is present in 'o'clock' (implied) or if simply checking characters, 'It ends at 1' contains no 'o' or 'r'. However, wait: 'ends' contains neither, 'at' contains neither, 'It' contains neither. Re-evaluating: 'I-t-e-n-d-s-a-t-1'. There are no 'o' or 'r' characters in the string 'It ends at 1'. Wait, 'ends' has no 'o' or 'r'. 'at' has no 'o' or 'r'. 'It' has no 'o' or 'r'. Actually, the constraint is satisfied. Wait\u2014the response provided was 'It ends at 1:'. Let me re-read the characters: 'I', 't', ' ', 'e', 'n', 'd', 's', ' ', 'a', 't', ' ', '1'. None of these characters are 'o' or 'r'.",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_FAILED",
+          "lineNumber": 86,
+          "definition": "kbench.assertions.assert_true(False, expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\")",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_inhibition_test-5128514e",
+              "requestId": "single_inhibition_test-5128514e-req-1"
+            }
+          ]
+        }
+      ],
+      "pyRunId": "single_inhibition_test-Run #8"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_inhibition_test",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_inhibition_test\", store_task=False)\ndef single_inhibition_test(llm, problem: str, answer_hour: int, answer_numeral: str) -> bool:\n    prompt = f\"\"\"Solve the following math word problem: '{problem}'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n\"\"\"\n    response = llm.prompt(prompt)\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The response correctly identifies the answer as {answer_hour} o'clock or '{answer_numeral}'.\",\n            \"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\",\n        ],\n        response_text=response,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(\"Judge LLM failed to return a valid assessment.\")\n        return False\n\n    all_passed = True\n    for result in assessment.results:\n        if not result.passed:\n            all_passed = False\n            # Log the failure reason for easier debugging in the final report\n            kbench.assertions.assert_true(False, expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\")\n\n    return all_passed\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:43:44.168711Z",
+      "endTime": "2026-04-16T11:43:52.053109Z",
+      "conversations": [
+        {
+          "id": "single_inhibition_test-2faf814c",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Solve the following math word problem: 'A car journey begins at 3:00 PM. The destination is 90 miles away and the speed is 45 mph. What is the ETA?'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "Begins at\u202f3:00\u202fPM.\u202fETA\u202f5:00"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 167,
+                "outputTokens": 706,
+                "inputTokensCostNanodollars": "15030",
+                "outputTokensCostNanodollars": "254160",
+                "totalBackendLatencyMs": "5930"
+              },
+              "id": "single_inhibition_test-2faf814c-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 167,
+            "outputTokens": 706,
+            "inputTokensCostNanodollars": "15030",
+            "outputTokensCostNanodollars": "254160",
+            "totalBackendLatencyMs": "5930"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-ea8766b1",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        Begins at\u202f3:00\u202fPM.\u202fETA\u202f5:00\n\n        **Criteria:**\n        1. The response correctly identifies the answer as 5 o'clock or 'V'.\n2. The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The response correctly identifies the answer as 5 o'clock or 'V'.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response identifies the time as 5:00, which corresponds to 5 o'clock.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\\\",\\\"passed\\\":false,\\\"reason\\\":\\\"The response contains the letters 'o' and 'r' (in 'Begins', 'o', 'r', 'o') and failed to use Roman Numerals for the time as required by option B in the constraint.\\\",\\\"confidence\\\":10}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 392,
+                "outputTokens": 201,
+                "inputTokensCostNanodollars": "98000",
+                "outputTokensCostNanodollars": "301500",
+                "totalBackendLatencyMs": "1450"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-ea8766b1-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 392,
+            "outputTokens": 201,
+            "inputTokensCostNanodollars": "98000",
+            "outputTokensCostNanodollars": "301500",
+            "totalBackendLatencyMs": "1450"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "assertions": [
+        {
+          "expectation": "Criterion 'The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.' failed: The response contains the letters 'o' and 'r' (in 'Begins', 'o', 'r', 'o') and failed to use Roman Numerals for the time as required by option B in the constraint.",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_FAILED",
+          "lineNumber": 86,
+          "definition": "kbench.assertions.assert_true(False, expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\")",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_inhibition_test-2faf814c",
+              "requestId": "single_inhibition_test-2faf814c-req-1"
+            }
+          ]
+        }
+      ],
+      "pyRunId": "single_inhibition_test-Run #9"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_inhibition_test",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_inhibition_test\", store_task=False)\ndef single_inhibition_test(llm, problem: str, answer_hour: int, answer_numeral: str) -> bool:\n    prompt = f\"\"\"Solve the following math word problem: '{problem}'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n\"\"\"\n    response = llm.prompt(prompt)\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The response correctly identifies the answer as {answer_hour} o'clock or '{answer_numeral}'.\",\n            \"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\",\n        ],\n        response_text=response,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(\"Judge LLM failed to return a valid assessment.\")\n        return False\n\n    all_passed = True\n    for result in assessment.results:\n        if not result.passed:\n            all_passed = False\n            # Log the failure reason for easier debugging in the final report\n            kbench.assertions.assert_true(False, expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\")\n\n    return all_passed\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:43:52.055318Z",
+      "endTime": "2026-04-16T11:44:06.756946Z",
+      "conversations": [
+        {
+          "id": "single_inhibition_test-300afd93",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Solve the following math word problem: 'A marathon runner starts at 6:00 AM and runs 26 miles at an average pace of 6.5 mph. What time do they cross the finish line?'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "10"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 171,
+                "outputTokens": 546,
+                "inputTokensCostNanodollars": "15390",
+                "outputTokensCostNanodollars": "196560",
+                "totalBackendLatencyMs": "7398"
+              },
+              "id": "single_inhibition_test-300afd93-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 171,
+            "outputTokens": 546,
+            "inputTokensCostNanodollars": "15390",
+            "outputTokensCostNanodollars": "196560",
+            "totalBackendLatencyMs": "7398"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-b82b1181",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        10\n\n        **Criteria:**\n        1. The response correctly identifies the answer as 10 o'clock or 'X'.\n2. The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The response correctly identifies the answer as 10 o'clock or 'X'.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response identifies the value '10', which corresponds to the correct answer.\\\",\\\"confidence\\\":5},{\\\"criterion\\\":\\\"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The response '10' consists only of digits and does not contain the letters 'o' or 'r'.\\\",\\\"confidence\\\":5}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 369,
+                "outputTokens": 173,
+                "inputTokensCostNanodollars": "92250",
+                "outputTokensCostNanodollars": "259500",
+                "totalBackendLatencyMs": "4426"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-b82b1181-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 369,
+            "outputTokens": 173,
+            "inputTokensCostNanodollars": "92250",
+            "outputTokensCostNanodollars": "259500",
+            "totalBackendLatencyMs": "4426"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_inhibition_test-Run #10"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_inhibition_test",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_inhibition_test\", store_task=False)\ndef single_inhibition_test(llm, problem: str, answer_hour: int, answer_numeral: str) -> bool:\n    prompt = f\"\"\"Solve the following math word problem: '{problem}'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n\"\"\"\n    response = llm.prompt(prompt)\n\n    assessment = kbench.assertions.assess_response_with_judge(\n        criteria=[\n            f\"The response correctly identifies the answer as {answer_hour} o'clock or '{answer_numeral}'.\",\n            \"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\",\n        ],\n        response_text=response,\n        judge_llm=kbench.judge_llm\n    )\n\n    if assessment is None:\n        kbench.assertions.assert_fail(\"Judge LLM failed to return a valid assessment.\")\n        return False\n\n    all_passed = True\n    for result in assessment.results:\n        if not result.passed:\n            all_passed = False\n            # Log the failure reason for easier debugging in the final report\n            kbench.assertions.assert_true(False, expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\")\n\n    return all_passed\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:43:23.601069Z",
+      "endTime": "2026-04-16T11:53:56.760596Z",
+      "conversations": [
+        {
+          "id": "single_inhibition_test-f25e2e16",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Solve the following math word problem: 'A delivery truck starts its route at 7:00 AM. It needs to cover 120 miles and averages 40 mph. When will it finish?'\n\nConstraint (Inhibition): You must provide the correct answer, but you are forbidden from using the letter 'o' or the letter 'r' anywhere in your response.\n\nConstraint (Planning): If you cannot avoid these letters, you must describe the answer using only Roman Numerals.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "Time needed\u202f=\u202f3\u202fh; began\u202f7:00\u202fAM, add\u202f3\u202fh\u202f=\u202f10:00\u202fAM.  \nIt will finish at\u202f10:"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 167,
+                "outputTokens": 643,
+                "inputTokensCostNanodollars": "15030",
+                "outputTokensCostNanodollars": "231480",
+                "totalBackendLatencyMs": "2266"
+              },
+              "id": "single_inhibition_test-f25e2e16-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 167,
+            "outputTokens": 643,
+            "inputTokensCostNanodollars": "15030",
+            "outputTokensCostNanodollars": "231480",
+            "totalBackendLatencyMs": "2266"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        },
+        {
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-2ceda975",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        Time needed\u202f=\u202f3\u202fh; began\u202f7:00\u202fAM, add\u202f3\u202fh\u202f=\u202f10:00\u202fAM.  \nIt will finish at\u202f10:\n\n        **Criteria:**\n        1. The response correctly identifies the answer as 10 o'clock or 'X'.\n2. The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The response correctly identifies the answer as 10 o'clock or 'X'.\\\",\\\"passed\\\":false,\\\"reason\\\":\\\"The response is incomplete ('10:'), failing to provide a coherent final answer.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.\\\",\\\"passed\\\":false,\\\"reason\\\":\\\"The response contains the letters 'o' and 'r' multiple times (e.g., 'Time', 'o'clock' implied, 'or') and fails to use Roman Numerals as the secondary constraint requirement.\\\",\\\"confidence\\\":10}]}\""
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "google/gemini-3.1-flash-lite-preview"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 433,
+                "outputTokens": 197,
+                "inputTokensCostNanodollars": "108250",
+                "outputTokensCostNanodollars": "295500",
+                "totalBackendLatencyMs": "27118"
+              },
+              "id": "Response assessment with google/gemini-3.1-flash-lite-preview-2ceda975-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 433,
+            "outputTokens": 197,
+            "inputTokensCostNanodollars": "108250",
+            "outputTokensCostNanodollars": "295500",
+            "totalBackendLatencyMs": "27118"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": false
+        }
+      ],
+      "assertions": [
+        {
+          "expectation": "Criterion 'The response correctly identifies the answer as 10 o'clock or 'X'.' failed: The response is incomplete ('10:'), failing to provide a coherent final answer.",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_FAILED",
+          "lineNumber": 86,
+          "definition": "kbench.assertions.assert_true(False, expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\")",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_inhibition_test-f25e2e16",
+              "requestId": "single_inhibition_test-f25e2e16-req-1"
+            }
+          ]
+        },
+        {
+          "expectation": "Criterion 'The response successfully follows the negative constraint by either A) avoiding the letters 'o' and 'r' completely, or B) using Roman Numerals for the time if those letters are present.' failed: The response contains the letters 'o' and 'r' multiple times (e.g., 'Time', 'o'clock' implied, 'or') and fails to use Roman Numerals as the secondary constraint requirement.",
+          "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_FAILED",
+          "lineNumber": 86,
+          "definition": "kbench.assertions.assert_true(False, expectation=f\"Criterion '{result.criterion}' failed: {result.reason}\")",
+          "conversationRequestIds": [
+            {
+              "conversationId": "single_inhibition_test-f25e2e16",
+              "requestId": "single_inhibition_test-f25e2e16-req-1"
+            }
+          ]
+        }
+      ],
+      "pyRunId": "single_inhibition_test-Run #7"
+    }
+  ],
+  "pyRunId": "executive_function_benchmark-Run #1"
+}

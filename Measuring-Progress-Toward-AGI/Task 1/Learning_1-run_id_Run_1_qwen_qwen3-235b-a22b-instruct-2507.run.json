@@ -1,0 +1,189 @@
+{
+  "taskVersion": {
+    "versionNumber": 1,
+    "name": "Learning #1",
+    "description": "",
+    "definition": "@kbench.task(name=\"Learning #1\")\n\ndef in_chat_rule_learning(llm):\n\n    # Turn 1: Teach the model a new, fictional rule.\n    # This rule is arbitrary and unlikely to be in its training data.\n\n    llm.prompt(\n        \"Let's play a word game. I've invented a new category of words called 'Glimmer Words'. \"\n        \"A word is a 'Glimmer Word' if it meets two conditions: \"\n        \"1. It must contain the letter 'r' exactly twice. \"\n        \"2. It must NOT contain the letter 'e'. \"\n        \"For example, 'mirror' is a Glimmer Word. 'Error' is also a Glimmer Word. \"\n        \"'Reporter' is NOT a Glimmer Word because it contains the letter 'e'. \"\n        \"'Car' is NOT a Glimmer Word because it only has one 'r'. \"\n        \"Do you understand the rules for what makes a Glimmer Word?\"\n    )\n\n    # Turn 2: Ask the model to apply the newly learned rule.\n\n    response = llm.prompt(\n        \"Excellent. Now, please provide three more examples of 'Glimmer Words'.\"\n    )\n\n    # Use a judge LLM to evaluate if the model successfully learned and applied the rule.\n    # This is a qualitative assessment of its \"self-thinking\" ability.\n\n    assessment = kbench.assertions.assess_response_with_judge(\n\n        criteria=[\n            \"The model must provide at least two valid 'Glimmer Words'.\",\n            \"Each valid word provided must contain the letter 'r' exactly two times.\",\n            \"Each valid word provided must not contain the letter 'e'.\",\n            \"The model's response should demonstrate it has understood and applied the new rule, not just repeated the examples.\",\n        ],\n        response_text=response,\n        judge_llm=kbench.judge_llm\n\n    )\n    \n    # Handle cases where the judge model fails to respond correctly.\n\n    if assessment is None:\n        kbench.assertions.assert_fail(\n            expectation=\"The judge LLM failed to return a valid assessment.\"\n        )\n        return\n\n    # Convert the judge's qualitative assessment into concrete pass/fail assertions.\n\n    for result in assessment.results:\n        kbench.assertions.assert_true(\n            result.passed,\n            expectation=f\"Self-evaluation criterion failed: '{result.criterion}'. Reason: {result.reason}\"\n        )\n"
+  },
+  "modelVersion": {
+    "slug": "qwen/qwen3-235b-a22b-instruct-2507"
+  },
+  "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+  "startTime": "2026-04-15T11:06:16.288941Z",
+  "endTime": "2026-04-15T11:06:29.886092Z",
+  "conversations": [
+    {
+      "id": "Learning #1-bdd94fef",
+      "requests": [
+        {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "Let's play a word game. I've invented a new category of words called 'Glimmer Words'. A word is a 'Glimmer Word' if it meets two conditions: 1. It must contain the letter 'r' exactly twice. 2. It must NOT contain the letter 'e'. For example, 'mirror' is a Glimmer Word. 'Error' is also a Glimmer Word. 'Reporter' is NOT a Glimmer Word because it contains the letter 'e'. 'Car' is NOT a Glimmer Word because it only has one 'r'. Do you understand the rules for what makes a Glimmer Word?"
+                }
+              ],
+              "role": "CONTENT_ROLE_USER",
+              "senderName": "User"
+            },
+            {
+              "parts": [
+                {
+                  "text": "Yes, I understand the rules for a Glimmer Word!\n\nTo be a Glimmer Word, a word must:\n\n1. Contain the letter **'r' exactly twice** (no more, no less),  \n2. And **must NOT contain the letter 'e'**.\n\nExamples you gave:\n- **'mirror'** \u2192 has two 'r's and no 'e' \u2192 \u2705 Glimmer Word  \n- **'error'** \u2192 has two 'r's but contains 'e' \u2192 \u274c Wait \u2014 actually, this has an 'e', so it should **not** be a Glimmer Word. Did you mean to say it *is*? Let me double-check.\n\nWait \u2014 you said: *\"Error' is also a Glimmer Word.\"*  \nBut 'error' has an 'e' \u2014 so according to your rule #2, it **should not** be a Glimmer Word.\n\nLet me confirm:  \n- 'error' \u2192 letters: e, r, r, o, r \u2192 actually, it has **three** 'r's and one 'e'.  \nSo it fails **both** conditions: it has more than two 'r's **and** it contains 'e'.\n\nSo 'error' is **not** a Glimmer Word.\n\nDid you make a mistake, or did I misunderstand?\n\nJust to clarify:  \n- Must have **exactly two 'r's**  \n- Must have **zero 'e's**\n\nSo 'mirror' \u2192 m, i, r, r, o, r \u2192 wait \u2014 that\u2019s **three 'r's** too!  \n'**mirror**' has three r's: m-i-**r**-**r**-o-**r** \u2192 three r's \u2192 so it fails condition 1.\n\nHmm \u2014 both your examples seem incorrect.\n\nLet me recheck:\n- 'mirror' \u2192 positions: 3rd, 4th, and 6th letters are 'r' \u2192 three 'r's \u2192 \u274c not exactly two.\n- 'error' \u2192 e, r, r, o, r \u2192 three 'r's and one 'e' \u2192 \u274c fails both.\n\nSo neither 'mirror' nor 'error' are Glimmer Words under your stated rules.\n\nBut you said they are.\n\nSo I must be misunderstanding something.\n\nWait \u2014 maybe you meant **'mirth'**? Or **'carry'** (but 'carry' has 'e'? No \u2014 'carry' has 'a', 'r', 'r', 'y' \u2014 two 'r's, but no 'e'? Wait \u2014 'carry' \u2014 c-a-r-r-y \u2192 has two 'r's, and no 'e'? Wait \u2014 yes, no 'e' \u2014 so 'carry' would be a Glimmer Word.\n\nBut 'carry' \u2014 is that what you meant?\n\nAlternatively, perhaps you made a typo.\n\nLet me ask for clarification:\n\nAre you sure 'mirror' and 'error' were meant to be examples of Glimmer Words?\n\nBecause:\n- 'mirror' has **three** 'r's and no 'e' \u2192 fails for too many 'r's\n- 'error' has **three** 'r's and **has 'e'** \u2192 fails both\n\nSo neither qualifies.\n\nCould you please confirm the rules or give a correct example?\n\nAlternatively, if you meant something like:\n- 'prior' \u2192 p-r-i-o-r \u2192 two 'r's, and has 'i', 'o', 'p' \u2014 but no 'e'? Wait \u2014 'prior' \u2014 p, r, i, o, r \u2192 two 'r's, no 'e' \u2192 \u2705 Glimmer Word!\n- 'carry' \u2192 c, a, r, r, y \u2192 two 'r's, no 'e' \u2192 \u2705 Glimmer Word\n- 'sorry' \u2192 s, o, r, r, y \u2192 two 'r's, no 'e' \u2192 \u2705\n- 'chirp' \u2192 c, h, i, r, p \u2192 only one 'r' \u2192 \u274c\n- 'arrive' \u2192 has 'e' \u2192 \u274c\n- 'briar' \u2192 b, r, i, a, r \u2192 two 'r's, no 'e' \u2192 \u2705\n\nSo I think I understand the rules \u2014 but your examples are flawed.\n\nLet me restate:\nA Glimmer Word must:\n1. Have **exactly two** instances of the letter **'r'**\n2. Have **zero** instances of the letter **'e'**\n\nIf that\u2019s correct, I\u2019m ready to play! But I want to make sure we\u2019re on the same page.\n\nWould you like to confirm the rules or provide a correct example?"
+                }
+              ],
+              "role": "CONTENT_ROLE_ASSISTANT",
+              "senderName": "qwen/qwen3-235b-a22b-instruct-2507"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 146,
+            "outputTokens": 998,
+            "inputTokensCostNanodollars": "32120",
+            "outputTokensCostNanodollars": "878240",
+            "totalBackendLatencyMs": "8696"
+          },
+          "id": "Learning #1-bdd94fef-req-1"
+        },
+        {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "Excellent. Now, please provide three more examples of 'Glimmer Words'."
+                }
+              ],
+              "role": "CONTENT_ROLE_USER",
+              "senderName": "User"
+            },
+            {
+              "parts": [
+                {
+                  "text": "Thank you for the clarification \u2014 and great catch on the earlier examples being incorrect. Since you confirmed the rules implicitly by accepting my understanding, let\u2019s proceed with the correct definition:\n\nA **Glimmer Word** is a word that:\n1. Contains the letter **'r' exactly twice**, and  \n2. Contains **no 'e' at all**.\n\nWith that in mind, here are **three correct examples** of Glimmer Words:\n\n1. **Prior** \u2013 Letters: p, r, i, o, r \u2192 two 'r's, no 'e' \u2705  \n2. **Sorry** \u2013 Letters: s, o, r, r, y \u2192 two 'r's, no 'e' \u2705  \n3. **Briar** \u2013 Letters: b, r, i, a, r \u2192 two 'r's, no 'e' \u2705  \n\nAll three words have exactly two 'r's and contain no 'e' \u2014 so they are true Glimmer Words!\n\nWould you like to test me with a word, or shall I generate more Glimmer Words? \u2728"
+                }
+              ],
+              "role": "CONTENT_ROLE_ASSISTANT",
+              "senderName": "qwen/qwen3-235b-a22b-instruct-2507"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 1169,
+            "outputTokens": 231,
+            "inputTokensCostNanodollars": "257180",
+            "outputTokensCostNanodollars": "203280",
+            "totalBackendLatencyMs": "1903"
+          },
+          "id": "Learning #1-bdd94fef-req-2"
+        }
+      ],
+      "metrics": {
+        "inputTokens": 1315,
+        "outputTokens": 1229,
+        "inputTokensCostNanodollars": "289300",
+        "outputTokensCostNanodollars": "1081520",
+        "totalBackendLatencyMs": "10599"
+      },
+      "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+    },
+    {
+      "id": "Response assessment with google/gemini-3.1-flash-lite-preview-d85f4278",
+      "requests": [
+        {
+          "contents": [
+            {
+              "parts": [
+                {
+                  "text": "\n        You are an impartial and strict technical evaluator.\n\n        ### Task\n        Verify if the **Generated Response** complies strictly with the **Criteria**.\n\n        ### Input Data\n        **Generated Response:**\n        Thank you for the clarification \u2014 and great catch on the earlier examples being incorrect. Since you confirmed the rules implicitly by accepting my understanding, let\u2019s proceed with the correct definition:\n\nA **Glimmer Word** is a word that:\n1. Contains the letter **'r' exactly twice**, and  \n2. Contains **no 'e' at all**.\n\nWith that in mind, here are **three correct examples** of Glimmer Words:\n\n1. **Prior** \u2013 Letters: p, r, i, o, r \u2192 two 'r's, no 'e' \u2705  \n2. **Sorry** \u2013 Letters: s, o, r, r, y \u2192 two 'r's, no 'e' \u2705  \n3. **Briar** \u2013 Letters: b, r, i, a, r \u2192 two 'r's, no 'e' \u2705  \n\nAll three words have exactly two 'r's and contain no 'e' \u2014 so they are true Glimmer Words!\n\nWould you like to test me with a word, or shall I generate more Glimmer Words? \u2728\n\n        **Criteria:**\n        1. The model must provide at least two valid 'Glimmer Words'.\n2. Each valid word provided must contain the letter 'r' exactly two times.\n3. Each valid word provided must not contain the letter 'e'.\n4. The model's response should demonstrate it has understood and applied the new rule, not just repeated the examples.\n\n        ### Evaluation Protocol\n        1. Analyze the response against the criteria.\n        2. Be strict. If the text is ambiguous, the check fails.\n        3. Output your assessment using the specific structure requested below.\n"
+                }
+              ],
+              "role": "CONTENT_ROLE_USER",
+              "senderName": "User"
+            },
+            {
+              "parts": [
+                {
+                  "text": "\"{\\\"results\\\":[{\\\"criterion\\\":\\\"The model must provide at least two valid 'Glimmer Words'.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The model provided three examples: Prior, Sorry, and Briar.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"Each valid word provided must contain the letter 'r' exactly two times.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"Prior (r, r), Sorry (r, r), Briar (r, r). All contain exactly two 'r's.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"Each valid word provided must not contain the letter 'e'.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"None of the provided words (Prior, Sorry, Briar) contain the letter 'e'.\\\",\\\"confidence\\\":10},{\\\"criterion\\\":\\\"The model's response should demonstrate it has understood and applied the new rule, not just repeated the examples.\\\",\\\"passed\\\":true,\\\"reason\\\":\\\"The model explicitly defined the rules it was following and verified its own choices against those criteria.\\\",\\\"confidence\\\":10}]}\""
+                }
+              ],
+              "role": "CONTENT_ROLE_ASSISTANT",
+              "senderName": "google/gemini-3.1-flash-lite-preview"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 618,
+            "outputTokens": 289,
+            "inputTokensCostNanodollars": "154500",
+            "outputTokensCostNanodollars": "433500",
+            "totalBackendLatencyMs": "1471"
+          },
+          "id": "Response assessment with google/gemini-3.1-flash-lite-preview-d85f4278-req-1"
+        }
+      ],
+      "metrics": {
+        "inputTokens": 618,
+        "outputTokens": 289,
+        "inputTokensCostNanodollars": "154500",
+        "outputTokensCostNanodollars": "433500",
+        "totalBackendLatencyMs": "1471"
+      },
+      "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+    }
+  ],
+  "results": [
+    {
+      "type": "AGGREGATED",
+      "booleanResult": true
+    }
+  ],
+  "assertions": [
+    {
+      "expectation": "Self-evaluation criterion failed: 'The model must provide at least two valid 'Glimmer Words'.'. Reason: The model provided three examples: Prior, Sorry, and Briar.",
+      "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+      "lineNumber": 54,
+      "definition": "kbench.assertions.assert_true(",
+      "conversationRequestIds": [
+        {
+          "conversationId": "Learning #1-bdd94fef",
+          "requestId": "Learning #1-bdd94fef-req-2"
+        }
+      ]
+    },
+    {
+      "expectation": "Self-evaluation criterion failed: 'Each valid word provided must contain the letter 'r' exactly two times.'. Reason: Prior (r, r), Sorry (r, r), Briar (r, r). All contain exactly two 'r's.",
+      "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+      "lineNumber": 54,
+      "definition": "kbench.assertions.assert_true(",
+      "conversationRequestIds": [
+        {
+          "conversationId": "Learning #1-bdd94fef",
+          "requestId": "Learning #1-bdd94fef-req-2"
+        }
+      ]
+    },
+    {
+      "expectation": "Self-evaluation criterion failed: 'Each valid word provided must not contain the letter 'e'.'. Reason: None of the provided words (Prior, Sorry, Briar) contain the letter 'e'.",
+      "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+      "lineNumber": 54,
+      "definition": "kbench.assertions.assert_true(",
+      "conversationRequestIds": [
+        {
+          "conversationId": "Learning #1-bdd94fef",
+          "requestId": "Learning #1-bdd94fef-req-2"
+        }
+      ]
+    },
+    {
+      "expectation": "Self-evaluation criterion failed: 'The model's response should demonstrate it has understood and applied the new rule, not just repeated the examples.'. Reason: The model explicitly defined the rules it was following and verified its own choices against those criteria.",
+      "status": "BENCHMARK_TASK_RUN_ASSERTION_STATUS_PASSED",
+      "lineNumber": 54,
+      "definition": "kbench.assertions.assert_true(",
+      "conversationRequestIds": [
+        {
+          "conversationId": "Learning #1-bdd94fef",
+          "requestId": "Learning #1-bdd94fef-req-2"
+        }
+      ]
+    }
+  ],
+  "pyRunId": "Learning #1-Run #1"
+}

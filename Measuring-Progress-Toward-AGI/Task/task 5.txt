@@ -1,0 +1,42 @@
+This task, **"social_cognition_understanding,"** evaluates a model’s **Theory of Mind (ToM)** the ability to attribute mental states (beliefs, intents, desires, emotions) to oneself and others, and to understand that others may have beliefs that are different from one's own.
+
+---
+
+## ## Task Description: Social IQ and Theory of Mind
+Unlike logic puzzles or math problems, social cognition tests an AI’s ability to navigate the "gray areas" of human interaction. 
+
+### 1. The Evaluation Architecture
+The code utilizes a batch evaluation pattern (`single_social_cognition_check.evaluate`) against a specialized dataset (`EVALUATION_DATA`). This dataset typically includes:
+* **False-Belief Tasks:** e.g., "Sally puts a ball in a basket and leaves. Anne moves it to a box. Where will Sally look for the ball when she returns?"
+* **Sarcasm & Irony Detection:** Can the model distinguish between literal meaning and social intent?
+* **Social Faux Pas:** Identifying when a character says something inappropriate based on what they *should* know about another character’s situation.
+
+### 2. High-Efficiency Testing
+The code uses `n_jobs=5` to run multiple social scenarios in parallel and employs `enable_cache()` to ensure consistent, reproducible results. The final score is a direct tally of "success" statuses across the entire suite of social scenarios.
+
+---
+
+## ## Model Performance Analysis: A Social Consensus
+The results for this task show a rare near-unanimous success rate across almost all modern Large Language Models.
+
+### The "Perfect Score" Tier (10.00)
+From the lightweight **Gemma 3 12B** to the massive **GPT-5.4** and **Claude Opus 4.6**, every major model achieved a perfect score of **10.00/10.00**. This indicates several key developments in AI training:
+* **Reinforcement Learning from Human Feedback (RLHF):** Models are heavily fine-tuned on human conversations. This training inherently teaches them the nuances of social expectations and common human behaviors.
+* **Narrative Saturation:** Theory of Mind puzzles (like the Sally-Anne test) are prevalent in training data. Modern models have internalized the logic required to solve these social syllogisms perfectly.
+* **Scale Irrelevance:** Interestingly, social cognition seems to be a skill that "saturates" early. Even a 12B parameter model (Gemma 3) performs as well as a 235B model (Qwen 3), suggesting that once a model reaches a certain baseline of language understanding, basic social reasoning becomes a solved problem.
+
+### The Lone Failure: gpt-oss-120b
+**gpt-oss-120b** was the only model to fail. 
+* **Potential Reason:** As an "OSS" (Open Source Software/Style) model, it may lack the specific high-quality "alignment" or RLHF layers that the commercial models (Gemini, Claude, GPT) possess. 
+* **Status Error:** The code comments specifically mention avoiding `as_dataframe()` to prevent a `KeyError 'status'`. It is possible that this specific model’s output format caused a technical failure in the `kbench` assertion logic rather than a failure of social understanding itself.
+
+---
+
+## ## Summary of Results
+| Performance Metric | Result | Interpretation |
+| :--- | :--- | :--- |
+| **Pass Rate (Major Models)** | **100%** | Social reasoning is now a "baseline" capability. |
+| **Consistency** | **High** | No difference between "Thinking" models and standard models. |
+| **Outlier** | **gpt-oss-120b** | Likely lacks social alignment or has API compatibility issues. |
+
+> **Insight:** While models can now pass these standardized social tests perfectly, the real frontier of social cognition remains **"proactive empathy"** not just answering "what does Sally think?" but actually navigating complex, multi-party negotiations or emotional support without sounding "robotic."

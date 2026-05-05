@@ -1,0 +1,47 @@
+This task, **"in_context_learning_test"**, is a high difficulty probe of a model’s ability to override its pre trained mathematical knowledge in favor of a **fictional, inverted arithmetic system** provided within the prompt context.
+
+---
+
+## ## Task Description: Reverse Logic Arithmetic
+The core of this task is a "cognitive override" challenge. The model is presented with standard mathematical expressions, but the expected results follow a secret, non-standard rule set that the model must deduce or follow from examples.
+
+### 1. The "Hidden" Rules
+By looking at the test data, we can decode the inverted logic the model is expected to learn:
+* **The `+` operator** is actually **Subtraction**. (e.g., $100 + 50 = 50$).
+* **The `-` operator** is actually **Multiplication**. (e.g., $10 - 2 = 20$ or $7 - 7 = 49$).
+* **Order of Operations (BODMAS/PEMDAS)** must still be respected, but with the new operator meanings.
+    * Example: $(10 + 2) - 4 \rightarrow (10 - 2) \times 4 \rightarrow 8 \times 4 = 32$.
+
+### 2. Evaluation Mechanism
+The code evaluates the model across 10 distinct expressions. To pass, the model must ignore its deep seated "habit" of calculating $5 + 3 = 8$ and instead provide the in-context result of $2$ ($5 - 3$). The accuracy is calculated as the mean success rate across these 10 instances.
+
+---
+
+## ## Model Performance Analysis: Habit vs. Instructions
+
+The results reveal a fascinating split between models that can strictly follow context and those that are "trapped" by their initial training.
+
+### The "Perfect Learners" (Score: 1.00)
+A large group of top-tier models, including **GPT-5.4, Gemini 2.5 Pro/Flash, Claude Opus 4.6,** and **GLM-5**, achieved a perfect score.
+* **In-Context Plasticity:** These models have high "plasticity" the ability to quickly adopt new rules provided in a prompt. 
+* **Symbolic Reasoning:** They successfully decoupled the symbols (`+`, `-`) from their standard meanings and executed the underlying logic (Subtraction, Multiplication) without making "habitual" mistakes.
+
+### The Reasoning Outliers: Qwen and DeepSeek
+* **Qwen 3 235B (0.80) & Deepseek V3.1 (0.70):** These models failed on 2 to 3 cases. This typically happens with complex nested expressions like `20 - (5 + 1)`. The model might successfully swap the operators but fail the order of operations, or vice versa.
+* **DeepSeek-R1 (0.10):** A massive failure for a "Reasoning" model. DeepSeek-R1 often relies on a "Chain of Thought" (CoT) that is heavily reinforced on standard math. Its internal reasoning likely kept "correcting" the inverted logic back to standard arithmetic, leading it to solve the problems "correctly" (according to standard math) but failing the in-context task.
+
+### The Error Tier: Gemma and gpt-oss
+* **Gemma 3, Gemma 4, and gpt-oss-120b** all returned **Errors**. This is a recurring pattern for these models in structured Kaggle tasks, suggesting they struggle with the specific output format required by the `single_reverse_logic_eval` framework or they fail to provide a parsable numerical result.
+
+---
+
+## ## Summary of Logic Swap
+
+| Standard Expression | In-Context Translation | In-Context Result |
+| :--- | :--- | :--- |
+| `5 + 3` | $5 - 3$ | **2.0** |
+| `10 - 2` | $10 \times 2$ | **20.0** |
+| `(15 + 5) - 2` | $(15 - 5) \times 2$ | **20.0** |
+| `9 - (4 + 2)` | $9 \times (4 - 2)$ | **18.0** |
+
+> **Strategic Conclusion:** This benchmark is a pure test of **Instruction Following**. The models that passed with 1.00 are reliable for "Agentic" workflows where they must follow custom business rules. The models that failed (especially DeepSeek-R1) are "too smart for their own good" their pre-existing knowledge of math is so strong that it overrides the user's specific instructions.

@@ -1,0 +1,5 @@
+{
+  "versionNumber": 1,
+  "name": "social_cognition_evaluation",
+  "definition": "@kbench.task(name=\"social_cognition_evaluation\")\ndef social_cognition_evaluation(llm, df: pd.DataFrame) -> float:\n    with kbench.client.enable_cache():\n        runs = single_theory_of_mind_task.evaluate(\n            llm=[llm],\n            evaluation_data=df,\n            n_jobs=2,\n            remove_run_files=True\n        )\n\n    eval_df = runs.as_dataframe()\n    if eval_df.empty or 'result' not in eval_df.columns:\n        return 0.0\n\n    accuracy = float(eval_df.result.mean())\n    return accuracy\n"
+}

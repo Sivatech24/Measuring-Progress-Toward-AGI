@@ -1,0 +1,49 @@
+This task, **"social_cognition_evaluation_multi"**, is a sophisticated benchmark designed to measure **Theory of Mind (ToM)** specifically the ability of a model to track multiple conflicting mental states across a variety of complex social scenarios.
+
+---
+
+## ## Task Description: Multi-Scenario Social Reasoning
+While basic social tests might look at a single event, this "multi" evaluation subjects the model to a diverse collection of scenarios (`SCENARIOS`), each requiring the AI to differentiate between objective reality and a character's subjective (and potentially incorrect) beliefs.
+
+### 1. The Reasoning Layers
+The test likely involves **Second-Order Theory of Mind**, which moves beyond "What does Sally think?" to more recursive questions like:
+* "What does John think that Sally believes about the hidden object?"
+* "Is Maria trying to deceive Paul, and does Paul realize he is being deceived?"
+
+
+
+### 2. The Evaluation Mechanism
+* **`single_theory_of_mind_test`**: This evaluator checks for logical consistency in the model's social attributions. It ensures the model isn't "leaking" its own knowledge of the facts into the characters' perspectives.
+* **Batch Processing**: By using a DataFrame of various scenarios and `n_jobs=2`, the benchmark tests the model's stability across different social contexts (e.g., workplace misunderstandings, accidental displacements, or intentional deceptions).
+
+---
+
+## ## Model Performance Analysis: The "Social Logic" Gap
+
+The results reveal a clear divide between models that have perfectly mastered social perspective taking and those that still struggle with complex or ambiguous scenarios.
+
+### The "Social Experts" (Score: 1.00)
+A large group of models, including the **Gemini 2.5/3** family, **Claude Opus 4.5/4.6**, and **Qwen 3**, achieved a perfect score.
+* **Stable Perspective Tracking:** These models successfully maintained "information silos" for each character, never confusing what the AI knows with what the character knows.
+* **Gemma 4 31B Success:** It is notable that **Gemma 4** passed perfectly while **Gemma 3** errored out. This suggests a significant jump in the "Social Intelligence" of the Gemma line between versions, particularly in following the evaluation's output format.
+
+### The "Logic Slip" Tier (Score: 0.67)
+A surprising group of heavyweights **GPT-5.4, DeepSeek-R1, Deepseek V3.1, and GLM-5** all scored exactly 0.67. 
+* **The 2/3 Failure:** A score of 0.67 typically implies the model failed exactly one-third of the scenarios (e.g., passing 2 out of 3 or 4 out of 6). 
+* **The Complexity Ceiling:** These models likely failed on the most complex "recursive" scenarios. For instance, they might correctly identify a false belief but fail to identify a character's *intent* behind a lie.
+* **DeepSeek-R1's Struggle:** Even with its advanced "Thinking" architecture, DeepSeek-R1 struggled here. This suggests that "Social Logic" is fundamentally different from "Mathematical Logic"; social reasoning requires a nuanced understanding of human fallibility that pure reasoning chains sometimes overlook.
+
+### The Error Tier: Gemma 3 & gpt-oss-120b
+As observed in previous benchmarks, **Gemma 3 12B** and **gpt-oss-120b** failed to return a valid result. This is almost certainly a **structural failure** rather than a cognitive one these models likely failed to adhere to the specific JSON or text-formatting requirements needed by the `single_theory_of_mind_test` evaluator.
+
+---
+
+## ## Summary of Key Challenges
+
+| Challenge | Requirement | Why it's difficult |
+| :--- | :--- | :--- |
+| **Information Siloing** | Keep character A's knowledge separate from character B's. | Models naturally want to use all available context. |
+| **Recursive Thinking** | Track "Thinking about thinking." | Requires deep nested logical processing. |
+| **Intent Attribution** | Distinguish between a mistake and a lie. | Requires understanding social motivations. |
+
+> **Key Takeaway:** This benchmark shows that while many models can handle basic social questions, **GPT-5.4 and DeepSeek-R1** are currently less reliable in complex, multi-party social scenarios than **Gemini** and **Claude**. In the world of AI, "Social Intelligence" is currently a more distinguishing factor than raw processing power.

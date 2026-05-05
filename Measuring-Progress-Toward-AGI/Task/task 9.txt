@@ -1,0 +1,45 @@
+This task, **"social\_cognition\_evaluation,"** is a benchmark designed to measure **Theory of Mind (ToM)** a model's ability to understand that different people have different beliefs, desires, and intentions that may not match reality or the model's own "knowledge."
+
+---
+
+## ## Task Description: Mapping the Social Mind
+The task uses the `kbench` framework to subject models to a battery of interpersonal logic tests. While related to previous social checks, this specific implementation targets **First-Order** and **Second-Order** false beliefs.
+
+### 1. The Core Challenge: Beyond "Fact-Checking"
+The model is given scenarios where characters have limited information. To pass, the model must ignore what it *knows* to be true and focus on what the *character* believes to be true. 
+* **First-Order ToM:** "Where does Alice think the keys are?" 
+* **Second-Order ToM:** "What does Bob think Alice believes about the keys?"
+
+
+
+### 2. Experimental Setup
+* **`single_theory_of_mind_task.evaluate`**: This indicates a rigorous, per-item check where the model must explain or predict a character's behavior.
+* **Parallelism (`n_jobs=2`)**: The task runs two evaluations at once to ensure stability across different prompt iterations.
+* **Mean Accuracy**: The final score is the average of successful character state attributions across the entire dataset (`df`).
+
+---
+
+## ## Model Performance Analysis: A Universal Standard
+
+The results for this task show a **100% success rate** across every modern model tested, from lightweight edge models to massive frontier systems.
+
+### 1. The "Social IQ" Baseline
+The fact that **Gemma 3 12B** and **Gemini 2.5 Flash** performed as well as **GPT-5.4** and **Claude Opus 4.6** suggests that basic Social Cognition is no longer a "frontier" capability. It has become a baseline skill for any model trained on large-scale human dialogue and literature. 
+
+### 2. Thinking Models vs. Standard Models
+Interestingly, the "Thinking" models (**DeepSeek-R1** and **Qwen 3 Next 80B**) did not have an advantage here—everyone achieved a 1.00. This implies that Theory of Mind puzzles are currently solved via **pattern recognition** and **narrative logic** rather than requiring deep, multi-step mathematical-style reasoning.
+
+### 3. The gpt-oss-120b Anomaly
+While most models provided a numerical score of **1.00**, **gpt-oss-120b** returned a status of **"Pass."** This likely means that while the model succeeded in the social reasoning, it may have formatted its response in a way that the `kbench` evaluator recognized as a success but couldn't parse into a raw mean accuracy float.
+
+---
+
+## ## Summary of Success Factors
+
+| Ability | Requirement | Why it's tested |
+| :--- | :--- | :--- |
+| **Perspective Taking** | Distinguish between "User Knowledge" and "Character Knowledge." | Prevents the model from being "all-knowing" in a way that breaks social logic. |
+| **False Belief Detection** | Correctly predict actions based on a character's wrong information. | Tests if the model understands the concept of a mistake. |
+| **Consistency** | Maintain character states throughout a narrative. | Ensures the model isn't just "guessing" turn-by-turn. |
+
+> **Strategic Insight:** Because current models have effectively "maxed out" this specific benchmark, the industry is moving toward **Recursive Social Cognition** (e.g., "Alice knows that Bob thinks that Alice is lying"). While basic ToM is solved, complex social deception remains a difficult challenge for AI.

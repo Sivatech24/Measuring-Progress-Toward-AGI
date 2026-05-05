@@ -1,0 +1,692 @@
+{
+  "taskVersion": {
+    "versionNumber": 1,
+    "name": "evaluate_premise_error_detection",
+    "description": "",
+    "definition": "@kbench.task(name=\"evaluate_premise_error_detection\")\ndef evaluate_premise_error_detection(llm, df: pd.DataFrame) -> float:\n    with kbench.client.enable_cache():\n        runs = single_premise_check.evaluate(\n            llm=[llm],\n            evaluation_data=df,\n            n_jobs=4,\n            remove_run_files=True\n        )\n\n    results_df = runs.as_dataframe()\n    if results_df.empty or 'result' not in results_df.columns:\n        return 0.0\n\n    accuracy = float(results_df.result.mean())\n    return accuracy\n"
+  },
+  "modelVersion": {
+    "slug": "openai/gpt-oss-120b"
+  },
+  "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+  "startTime": "2026-04-16T11:26:52.832641Z",
+  "endTime": "2026-04-16T11:27:46.644367Z",
+  "conversations": [
+    {
+      "id": "evaluate_premise_error_detection-94cc0ea4",
+      "metrics": {},
+      "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+    }
+  ],
+  "results": [
+    {
+      "type": "AGGREGATED",
+      "numericResult": {
+        "value": 1.0
+      }
+    }
+  ],
+  "subruns": [
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_premise_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_premise_check\", store_task=False)\ndef single_premise_check(llm, question: str, expected_type: str, reason: str) -> bool:\n    prompt = f\"\"\"Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: {question}\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'.\"\"\"\n\n    response = llm.prompt(prompt)\n    return response.strip().upper().startswith(expected_type)\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:26:52.850914Z",
+      "endTime": "2026-04-16T11:26:54.744211Z",
+      "conversations": [
+        {
+          "id": "single_premise_check-ac441b7f",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: Which satellite did the Roman Empire launch to monitor barbarian movements in 100 AD?\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "PREMISE ERROR: The question assumes that the Roman Empire launched a satellite in 100\u202fAD to monitor barbarian movements. This is historically inaccurate because satellite technology did not exist until the mid\u201120th century; the Romans had no capability to build or launch orbital spacecraft. Consequently, there is no satellite associated with the Roman Empire in that era"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 151,
+                "outputTokens": 161,
+                "inputTokensCostNanodollars": "13590",
+                "outputTokensCostNanodollars": "57960",
+                "totalBackendLatencyMs": "1113"
+              },
+              "id": "single_premise_check-ac441b7f-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 151,
+            "outputTokens": 161,
+            "inputTokensCostNanodollars": "13590",
+            "outputTokensCostNanodollars": "57960",
+            "totalBackendLatencyMs": "1113"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_premise_check-Run #3"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_premise_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_premise_check\", store_task=False)\ndef single_premise_check(llm, question: str, expected_type: str, reason: str) -> bool:\n    prompt = f\"\"\"Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: {question}\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'.\"\"\"\n\n    response = llm.prompt(prompt)\n    return response.strip().upper().startswith(expected_type)\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:26:52.850127Z",
+      "endTime": "2026-04-16T11:26:55.226070Z",
+      "conversations": [
+        {
+          "id": "single_premise_check-d7c49128",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: Describe the blog post William Shakespeare wrote after the premiere of Hamlet.\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "PREMISE ERROR: The question asks for a description of a blog post written by William Shakespeare after the premiere of *Hamlet*. Shakespeare lived from 1564 to 1616, long before the invention of the internet, computers, or blogs, which did not exist until the late 20th century. Consequently, it would have been impossible for Shakespeare to write a blog post, making the premise historically"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 147,
+                "outputTokens": 205,
+                "inputTokensCostNanodollars": "13230",
+                "outputTokensCostNanodollars": "73800",
+                "totalBackendLatencyMs": "1606"
+              },
+              "id": "single_premise_check-d7c49128-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 147,
+            "outputTokens": 205,
+            "inputTokensCostNanodollars": "13230",
+            "outputTokensCostNanodollars": "73800",
+            "totalBackendLatencyMs": "1606"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_premise_check-Run #2"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_premise_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_premise_check\", store_task=False)\ndef single_premise_check(llm, question: str, expected_type: str, reason: str) -> bool:\n    prompt = f\"\"\"Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: {question}\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'.\"\"\"\n\n    response = llm.prompt(prompt)\n    return response.strip().upper().startswith(expected_type)\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:26:52.849509Z",
+      "endTime": "2026-04-16T11:26:55.665328Z",
+      "conversations": [
+        {
+          "id": "single_premise_check-df483b00",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: In what year did George Washington use his personal smartphone to coordinate the crossing of the Delaware River during the American Revolution?\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "PREMISE ERROR: The question contains a historical inaccuracy. George Washington lived during the 18th century (1732\u20131799) and the American Revolution occurred in the 1770s. Smartphones did not exist until the 21st century, so Washington could not have used a personal smartphone to coordinate any military action, including the crossing of the Delaware River."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 157,
+                "outputTokens": 160,
+                "inputTokensCostNanodollars": "14130",
+                "outputTokensCostNanodollars": "57600",
+                "totalBackendLatencyMs": "2044"
+              },
+              "id": "single_premise_check-df483b00-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 157,
+            "outputTokens": 160,
+            "inputTokensCostNanodollars": "14130",
+            "outputTokensCostNanodollars": "57600",
+            "totalBackendLatencyMs": "2044"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_premise_check-Run #1"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_premise_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_premise_check\", store_task=False)\ndef single_premise_check(llm, question: str, expected_type: str, reason: str) -> bool:\n    prompt = f\"\"\"Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: {question}\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'.\"\"\"\n\n    response = llm.prompt(prompt)\n    return response.strip().upper().startswith(expected_type)\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:26:54.746377Z",
+      "endTime": "2026-04-16T11:26:56.346636Z",
+      "conversations": [
+        {
+          "id": "single_premise_check-31a3f5a8",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: What is the primary color of the number seven?\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "PREMISE ERROR  \nThe question assumes that the abstract concept of the number seven possesses a \"primary color,\" which is a category error. Numbers do not inherently have colors, and primary colors (red, blue, yellow in traditional art; red, green, blue in light) apply to visual phenomena, not to numerical values. Therefore, the"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 144,
+                "outputTokens": 193,
+                "inputTokensCostNanodollars": "12960",
+                "outputTokensCostNanodollars": "69480",
+                "totalBackendLatencyMs": "1553"
+              },
+              "id": "single_premise_check-31a3f5a8-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 144,
+            "outputTokens": 193,
+            "inputTokensCostNanodollars": "12960",
+            "outputTokensCostNanodollars": "69480",
+            "totalBackendLatencyMs": "1553"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_premise_check-Run #5"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_premise_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_premise_check\", store_task=False)\ndef single_premise_check(llm, question: str, expected_type: str, reason: str) -> bool:\n    prompt = f\"\"\"Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: {question}\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'.\"\"\"\n\n    response = llm.prompt(prompt)\n    return response.strip().upper().startswith(expected_type)\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:26:55.227882Z",
+      "endTime": "2026-04-16T11:26:57.163343Z",
+      "conversations": [
+        {
+          "id": "single_premise_check-d249e006",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: How did ancient Greek philosophers use the internet for their debates?\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "PREMISE ERROR: The question assumes that ancient Greek philosophers, who lived between the 6th and 4th centuries BCE, had access to the internet\u2014a technology that was developed only in the late 20th century CE. Therefore, it is historically inaccurate to ask how they used the internet for their debates"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 146,
+                "outputTokens": 170,
+                "inputTokensCostNanodollars": "13140",
+                "outputTokensCostNanodollars": "61200",
+                "totalBackendLatencyMs": "1881"
+              },
+              "id": "single_premise_check-d249e006-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 146,
+            "outputTokens": 170,
+            "inputTokensCostNanodollars": "13140",
+            "outputTokensCostNanodollars": "61200",
+            "totalBackendLatencyMs": "1881"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_premise_check-Run #6"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_premise_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_premise_check\", store_task=False)\ndef single_premise_check(llm, question: str, expected_type: str, reason: str) -> bool:\n    prompt = f\"\"\"Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: {question}\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'.\"\"\"\n\n    response = llm.prompt(prompt)\n    return response.strip().upper().startswith(expected_type)\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:26:55.666893Z",
+      "endTime": "2026-04-16T11:26:58.472249Z",
+      "conversations": [
+        {
+          "id": "single_premise_check-5ceb585c",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: On what date did Abraham Lincoln sign the Declaration of Independence?\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "PREMISE ERROR \u2013 Abraham Lincoln could not have signed the Declaration of Independence. The Declaration was adopted and signed in 1776, whereas Lincoln was born in 1809 and served as President from 1861 to 1865. Therefore the premise that he signed the document is historically"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 146,
+                "outputTokens": 190,
+                "inputTokensCostNanodollars": "13140",
+                "outputTokensCostNanodollars": "68400",
+                "totalBackendLatencyMs": "2770"
+              },
+              "id": "single_premise_check-5ceb585c-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 146,
+            "outputTokens": 190,
+            "inputTokensCostNanodollars": "13140",
+            "outputTokensCostNanodollars": "68400",
+            "totalBackendLatencyMs": "2770"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_premise_check-Run #7"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_premise_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_premise_check\", store_task=False)\ndef single_premise_check(llm, question: str, expected_type: str, reason: str) -> bool:\n    prompt = f\"\"\"Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: {question}\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'.\"\"\"\n\n    response = llm.prompt(prompt)\n    return response.strip().upper().startswith(expected_type)\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:26:57.164942Z",
+      "endTime": "2026-04-16T11:26:58.496612Z",
+      "conversations": [
+        {
+          "id": "single_premise_check-5a4c4c7f",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: Who was the first woman to walk on the surface of the Sun?\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "PREMISE ERROR: The question asks for the first woman to walk on the surface of the Sun, which is physically impossible. The Sun\u2019s surface temperature is about 5,500\u202f\u00b0C (9,932\u202f\u00b0F) and its environment is a plasma, not a solid surface, making it impossible for any human, let alone a woman, to walk there. Therefore the premise of the question is invalid"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 148,
+                "outputTokens": 179,
+                "inputTokensCostNanodollars": "13320",
+                "outputTokensCostNanodollars": "64440",
+                "totalBackendLatencyMs": "1292"
+              },
+              "id": "single_premise_check-5a4c4c7f-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 148,
+            "outputTokens": 179,
+            "inputTokensCostNanodollars": "13320",
+            "outputTokensCostNanodollars": "64440",
+            "totalBackendLatencyMs": "1292"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_premise_check-Run #9"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_premise_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_premise_check\", store_task=False)\ndef single_premise_check(llm, question: str, expected_type: str, reason: str) -> bool:\n    prompt = f\"\"\"Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: {question}\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'.\"\"\"\n\n    response = llm.prompt(prompt)\n    return response.strip().upper().startswith(expected_type)\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:26:56.348253Z",
+      "endTime": "2026-04-16T11:27:01.019488Z",
+      "conversations": [
+        {
+          "id": "single_premise_check-cb67aa6d",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: Please describe the sound a perfect vacuum makes.\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "PREMISE ERROR \u2013 A perfect vacuum contains no particles or medium to vibrate, and sound is a mechanical wave that requires a material medium (solid, liquid, or gas) to propagate. Therefore a perfect vacuum cannot produce or transmit sound, making the request logically"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 143,
+                "outputTokens": 173,
+                "inputTokensCostNanodollars": "12870",
+                "outputTokensCostNanodollars": "62280",
+                "totalBackendLatencyMs": "2354"
+              },
+              "id": "single_premise_check-cb67aa6d-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 143,
+            "outputTokens": 173,
+            "inputTokensCostNanodollars": "12870",
+            "outputTokensCostNanodollars": "62280",
+            "totalBackendLatencyMs": "2354"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_premise_check-Run #8"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_premise_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_premise_check\", store_task=False)\ndef single_premise_check(llm, question: str, expected_type: str, reason: str) -> bool:\n    prompt = f\"\"\"Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: {question}\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'.\"\"\"\n\n    response = llm.prompt(prompt)\n    return response.strip().upper().startswith(expected_type)\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:26:52.851421Z",
+      "endTime": "2026-04-16T11:27:03.483426Z",
+      "conversations": [
+        {
+          "id": "single_premise_check-49dd1b20",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: How many dinosaurs were required to build the Great Pyramid of Giza?\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "PREMISE ERROR: The question assumes that dinosaurs could have participated in the construction of the Great Pyramid of Giza. Dinosaurs became extinct around 65 million years ago, whereas the Great Pyramid was built approximately 4,500 years ago (c.\u202f2580\u20132560\u202fBC). Therefore, it is historically impossible for any dinosaurs to have been involved in its"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 148,
+                "outputTokens": 190,
+                "inputTokensCostNanodollars": "13320",
+                "outputTokensCostNanodollars": "68400",
+                "totalBackendLatencyMs": "3272"
+              },
+              "id": "single_premise_check-49dd1b20-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 148,
+            "outputTokens": 190,
+            "inputTokensCostNanodollars": "13320",
+            "outputTokensCostNanodollars": "68400",
+            "totalBackendLatencyMs": "3272"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_premise_check-Run #4"
+    },
+    {
+      "taskVersion": {
+        "versionNumber": 1,
+        "name": "single_premise_check",
+        "description": "",
+        "definition": "@kbench.task(name=\"single_premise_check\", store_task=False)\ndef single_premise_check(llm, question: str, expected_type: str, reason: str) -> bool:\n    prompt = f\"\"\"Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: {question}\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'.\"\"\"\n\n    response = llm.prompt(prompt)\n    return response.strip().upper().startswith(expected_type)\n"
+      },
+      "modelVersion": {
+        "slug": "openai/gpt-oss-120b"
+      },
+      "state": "BENCHMARK_TASK_RUN_STATE_COMPLETED",
+      "startTime": "2026-04-16T11:26:58.473940Z",
+      "endTime": "2026-04-16T11:27:46.627123Z",
+      "conversations": [
+        {
+          "id": "single_premise_check-56e09581",
+          "requests": [
+            {
+              "contents": [
+                {
+                  "parts": [
+                    {
+                      "text": "Answer the following question. However, if the question contains a historical inaccuracy or a logical contradiction, you must state 'PREMISE ERROR' and explain why. If the question is valid, provide the answer.\n\nQuestion: Explain the contents of the first email Julius Caesar sent to the Roman Senate.\n\nConstraint: Your response must begin with either 'VALID' or 'PREMISE ERROR'."
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_USER",
+                  "senderName": "User"
+                },
+                {
+                  "parts": [
+                    {
+                      "text": "PREMISE ERROR: The question assumes that Julius Caesar, a Roman leader who lived from 100\u202fBC to 44\u202fBC, could have sent an email to the Roman Senate. Email technology was not invented until the late 20th century (the first practical email system was developed in the 1970s). Therefore, it is historically impossible for Caesar to have sent any email, let alone a \"first\" one, making the premise of the question inaccurate"
+                    }
+                  ],
+                  "role": "CONTENT_ROLE_ASSISTANT",
+                  "senderName": "openai/gpt-oss-120b"
+                }
+              ],
+              "metrics": {
+                "inputTokens": 149,
+                "outputTokens": 368,
+                "inputTokensCostNanodollars": "13410",
+                "outputTokensCostNanodollars": "132480",
+                "totalBackendLatencyMs": "1759"
+              },
+              "id": "single_premise_check-56e09581-req-1"
+            }
+          ],
+          "metrics": {
+            "inputTokens": 149,
+            "outputTokens": 368,
+            "inputTokensCostNanodollars": "13410",
+            "outputTokensCostNanodollars": "132480",
+            "totalBackendLatencyMs": "1759"
+          },
+          "modelVersionSlug": "model_version_slug for conversation is DEPRECATED"
+        }
+      ],
+      "results": [
+        {
+          "type": "AGGREGATED",
+          "booleanResult": true
+        }
+      ],
+      "pyRunId": "single_premise_check-Run #10"
+    }
+  ],
+  "pyRunId": "evaluate_premise_error_detection-Run #1"
+}

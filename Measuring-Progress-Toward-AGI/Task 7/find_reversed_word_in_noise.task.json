@@ -1,0 +1,5 @@
+{
+  "versionNumber": 1,
+  "name": "find_reversed_word_in_noise",
+  "definition": "@kbench.task(name=\"find_reversed_word_in_noise\")\ndef find_reversed_word_in_noise(llm) -> float:\n    words_to_find = [\n        \"COMPUTER\", \"PYTHON\", \"KAGGLE\", \"BENCHMARK\", \"EVALUATE\",\n        \"SEQUENCE\", \"LIBRARY\", \"FRAMEWORK\", \"ANALYSIS\", \"INSIGHT\"\n    ]\n\n    eval_data = []\n    for word in words_to_find:\n        data_block, answer = generate_noisy_data(word)\n        eval_data.append({\"data_block\": data_block, \"answer\": answer})\n\n    df = pd.DataFrame(eval_data)\n\n    with kbench.client.enable_cache():\n        runs = find_reversed_word_single.evaluate(\n            llm=[llm],\n            evaluation_data=df,\n            n_jobs=2,\n            remove_run_files=True\n        )\n\n    eval_df = runs.as_dataframe()\n    if eval_df.empty or 'result' not in eval_df.columns:\n        return 0.0\n\n    accuracy = float(eval_df.result.mean())\n    return accuracy\n"
+}
